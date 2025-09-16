@@ -199,10 +199,16 @@ private void ShowErrorMessage(string message)
             return $"{gameData.meta.cdnBase}/{videoFileName}";
         }
     }
-    
+
     void OnVideoStarted()
     {
         Debug.Log("Video started playing");
+
+        if (uiController != null)
+        {
+            uiController.functionPanel.SetActive(true);
+            uiController.ShowAllCanvasGroup();
+        }
     }
     
     void OnVideoFinished()
@@ -257,10 +263,11 @@ private void ShowErrorMessage(string message)
     void OnChoiceSelected(string nextNodeId)
     {
         Debug.Log($"Choice selected: {nextNodeId}");
-        
+
         if (!string.IsNullOrEmpty(nextNodeId))
         {
             PlayNode(nextNodeId);
+            uiController.HideAllCanvasGroup();
         }
         else
         {

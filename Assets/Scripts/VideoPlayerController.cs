@@ -56,7 +56,7 @@ public class VideoPlayerController : MonoBehaviour
         if (mediaPlayer.OpenMedia(MediaPathType.AbsolutePathOrURL, videoUrl, true))
         {
             isVideoPlaying = true;
-            OnVideoStarted?.Invoke();
+            //OnVideoStarted?.Invoke();
         }
         else
         {
@@ -114,6 +114,7 @@ public class VideoPlayerController : MonoBehaviour
                 
             case MediaPlayerEvent.EventType.Started:
                 Debug.Log("Video started");
+                OnVideoStarted?.Invoke();
                 isVideoPlaying = true;
                 break;
                 

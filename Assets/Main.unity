@@ -1123,6 +1123,30 @@ PrefabInstance:
       propertyPath: m_BlockingMask.m_Bits
       value: 4294967295
       objectReference: {fileID: 0}
+    - target: {fileID: 6098703465132870335, guid: ea778f12d37de854ea6bbbef1376ce46, type: 3}
+      propertyPath: m_ClearFlags
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6098703465132870335, guid: ea778f12d37de854ea6bbbef1376ce46, type: 3}
+      propertyPath: m_BackGroundColor.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6098703465132870335, guid: ea778f12d37de854ea6bbbef1376ce46, type: 3}
+      propertyPath: m_BackGroundColor.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6098703465132870335, guid: ea778f12d37de854ea6bbbef1376ce46, type: 3}
+      propertyPath: m_BackGroundColor.g
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6098703465132870335, guid: ea778f12d37de854ea6bbbef1376ce46, type: 3}
+      propertyPath: m_BackGroundColor.r
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8095797807054738861, guid: ea778f12d37de854ea6bbbef1376ce46, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 9047939004584673194, guid: ea778f12d37de854ea6bbbef1376ce46, type: 3}
       propertyPath: m_Name
       value: CameraGroup
@@ -1133,6 +1157,8 @@ PrefabInstance:
     - {fileID: 6276756111918867722, guid: ea778f12d37de854ea6bbbef1376ce46, type: 3}
     - {fileID: 7441008019490582054, guid: ea778f12d37de854ea6bbbef1376ce46, type: 3}
     - {fileID: 7707823407293047122, guid: ea778f12d37de854ea6bbbef1376ce46, type: 3}
+    - {fileID: 3152656672212022648, guid: ea778f12d37de854ea6bbbef1376ce46, type: 3}
+    - {fileID: 3208012322348174048, guid: ea778f12d37de854ea6bbbef1376ce46, type: 3}
     m_RemovedGameObjects:
     - {fileID: 8460714941975462092, guid: ea778f12d37de854ea6bbbef1376ce46, type: 3}
     - {fileID: 5793999859582063225, guid: ea778f12d37de854ea6bbbef1376ce46, type: 3}
@@ -1146,7 +1172,10 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6153038634626832968, guid: ea778f12d37de854ea6bbbef1376ce46, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1781817647}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8095797807054738861, guid: ea778f12d37de854ea6bbbef1376ce46, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1878285971}
   m_SourcePrefab: {fileID: 100100000, guid: ea778f12d37de854ea6bbbef1376ce46, type: 3}
 --- !u!224 &195576384 stripped
 RectTransform:
@@ -9060,11 +9089,11 @@ MonoBehaviour:
     _customPreferredMaximumResolution: {x: 0, y: 0}
     _preferredPeakBitRate: 0
     _preferredPeakBitRateUnits: 1
-    videoApi: 2
+    videoApi: 1
     showPosterFrame: 0
     audio360ChannelMode: 0
     audio360LatencyMS: 0
-    preferSoftwareDecoder: 0
+    preferSoftwareDecoder: 1
     forceRtpTCP: 0
     forceEnableMediaCodecAsynchronousQueueing: 0
     fileOffset: 0
@@ -10274,6 +10303,7 @@ MonoBehaviour:
   fadeInDuration: 0.5
   fadeOutDuration: 0.3
   functionPanel: {fileID: 520298506}
+  mainCanvasGroup: {fileID: 1878285971}
 --- !u!1 &1800491986
 GameObject:
   m_ObjectHideFlags: 0
@@ -10637,6 +10667,23 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1856462395}
   m_CullTransparentMesh: 1
+--- !u!1 &1878285967 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8095797807054738861, guid: ea778f12d37de854ea6bbbef1376ce46, type: 3}
+  m_PrefabInstance: {fileID: 195576383}
+  m_PrefabAsset: {fileID: 0}
+--- !u!225 &1878285971
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1878285967}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &1885960482
 GameObject:
   m_ObjectHideFlags: 0
