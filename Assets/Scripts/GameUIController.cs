@@ -22,6 +22,9 @@ public class GameUIController : MonoBehaviour
     public float fadeInDuration = 0.5f;
     public float fadeOutDuration = 0.3f;
     
+    public GameObject functionPanel;
+
+
     private List<Button> currentChoiceButtons = new List<Button>();
     private System.Action<string> onChoiceSelected;
     private System.Action<bool> onQTECompleted;
@@ -69,6 +72,8 @@ public class GameUIController : MonoBehaviour
         {
             CreateChoiceButton(choice);
         }
+
+        functionPanel.SetActive(false);
         
         // Show the choice panel with fade in
         StartCoroutine(FadeInPanel(choicePanelCanvasGroup, choicePanel));

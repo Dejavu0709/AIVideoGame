@@ -3,8 +3,9 @@
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
@@ -13,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _alias: 
   _mediaPath:
-    _pathType: 2
-    _path: AVProVideoSamples/RenderHeads-1080p30-H264.mp4
+    _pathType: 0
+    _path: 
   _hints:
     transparency: 0
     alphaPacking: 0
@@ -22,6 +23,7 @@ MonoBehaviour:
   _macOS: {fileID: 0}
   _windows: {fileID: 0}
   _android: {fileID: 0}
+  _openharmony: {fileID: 0}
   _iOS: {fileID: 0}
   _tvOS: {fileID: 0}
   _windowsUWP: {fileID: 0}
