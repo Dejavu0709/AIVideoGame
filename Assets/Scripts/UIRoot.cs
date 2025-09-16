@@ -73,17 +73,17 @@ public class UIRoot : MonoBehaviour
     public static float marginToButtom = 0.0f;
     public static float marginToTop = -77.0f;
 	public static float marginToButtomForDialog = 20.0f;
-    [DllImport("__Internal")]
-    private static extern int CheckForNotch();
+    //[DllImport("__Internal")]
+    //private static extern int CheckForNotch();
     public static void TryAdaptToScreen(RectTransform transform)
     {
 #if UNITY_EDITOR
         return;
         #endif
-        if (1 == CheckForNotch())
+        //if (1 == CheckForNotch())
         {
-            transform.offsetMin = new Vector2(-marginToLeft, -marginToButtom);
-            transform.offsetMax = new Vector2(marginToRight, marginToTop);
+       //     transform.offsetMin = new Vector2(-marginToLeft, -marginToButtom);
+        //    transform.offsetMax = new Vector2(marginToRight, marginToTop);
         }
     }
 }
