@@ -34,13 +34,24 @@ public class StoryTreeView : MonoBehaviour
 
     public Transform Content;
 
+    public Button BackButton;
+
     private readonly Dictionary<string, NodeUI> _nodeUIs = new Dictionary<string, NodeUI>();
     private readonly List<UIEdge> _edges = new List<UIEdge>();
 
+
+    void OnEnable()
+    {
+        BackButton.onClick.AddListener(BackToVideo);
+    }
+    void OnDisable()
+    {
+        BackButton.onClick.RemoveListener(BackToVideo);
+    }
     /// <summary>
     /// Build the tree from GameData. Clears previous UI children.
     /// </summary>
-    public void Build(GameData data)
+    private void Build(GameData data)
     {
         if (data == null || data.nodes == null || data.nodes.Count == 0)
         {
@@ -167,7 +178,7 @@ public class StoryTreeView : MonoBehaviour
                 var sprite = LoadThumbnailForNode(n, data?.meta?.cdnBase);
                 if (sprite == null)
                 {
-                       // Ensure thumbnail is loaded or downloaded and cached, then applied when ready
+                    // Ensure thumbnail is loaded or downloaded and cached, then applied when ready
                     StartCoroutine(ThumbnailCache.LoadOrDownload(
                     n.id,
                     data?.meta?.cdnBase,
@@ -181,10 +192,12 @@ public class StoryTreeView : MonoBehaviour
                     }));
 
                 }
-                
-                nodeUI.SetInfo(n.id, title, sprite != null ? sprite : defaultThumbnail);
 
-             
+                nodeUI.SetInfo(n.id, title, sprite != null ? sprite : defaultThumbnail);
+                // Provide video info so the button can play the corresponding video
+                nodeUI.SetVideo(n.video, data?.meta?.cdnBase);
+
+
                 // Position: x by level, y evenly distributed and centered within this level
                 var rt = nodeUI.GetComponent<RectTransform>();
                 Vector2 pos = new Vector2(l * horizontalSpacing,
@@ -306,7 +319,7 @@ public class StoryTreeView : MonoBehaviour
         if (!string.IsNullOrEmpty(baseName))
         {
             int dot = baseName.LastIndexOf('.')
-;            if (dot >= 0) baseName = baseName.Substring(0, dot);
+; if (dot >= 0) baseName = baseName.Substring(0, dot);
             string pathByVideo = string.IsNullOrEmpty(thumbnailsResourcesFolder) ? baseName : ($"{thumbnailsResourcesFolder}/{baseName}");
             sprite = Resources.Load<Sprite>(pathByVideo);
             if (sprite != null) return sprite;
@@ -399,5 +412,27 @@ public class StoryTreeView : MonoBehaviour
             // Ensure horizontal scroll left; keep vertical position unchanged
             scroll.horizontalNormalizedPosition = 0f;
         }
+    }
+
+
+    public void Show()
+    {
+        if (_nodeUIs.Count == 0)
+        {
+            Build(BranchingVideoGameManager.GameData);
+        }
+        //Todo update
+    }
+
+    public void Hide()
+    {
+        
+    }
+    
+
+    public void BackToVideo()
+    {
+        this.gameObject.SetActive(false);
+        VideoPlayerController.Instance.ResumeVideo();
     }
 }

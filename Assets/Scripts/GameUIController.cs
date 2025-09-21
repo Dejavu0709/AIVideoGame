@@ -3,8 +3,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
+using NexgenDragon;
 
-public class GameUIController : MonoBehaviour
+public class GameUIController : MonoSingleton<GameUIController>
 {
     [Header("UI Elements")]
     public GameObject choicePanel;
@@ -362,15 +363,20 @@ public class GameUIController : MonoBehaviour
             canvasGroup.alpha = 1f;
         }
     }
-    
+
     public void ShowTreeView()
     {
+        VideoPlayerController.Instance.PauseVideo();
         if (TreeView == null)
         {
             Debug.LogError("TreeView is not assigned!");
             return;
         }
         TreeView.gameObject.SetActive(true);
-        TreeView.Build(BranchingVideoGameManager.GameData);
+        TreeView.Show();
+    }
+    public void HideTreeView()
+    {
+        TreeView.gameObject.SetActive(false);
     }
 }

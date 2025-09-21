@@ -11,6 +11,21 @@ public class NodeUI : MonoBehaviour
     [Header("Data")]
     public string nodeId;
 
+    public Button VideoButton;
+
+    // Video data
+    private string videoFileName;
+    private string cdnBase;
+
+    private void Awake()
+    {
+        if (VideoButton != null)
+        {
+            VideoButton.onClick.RemoveListener(OnVideoButtonClicked);
+            VideoButton.onClick.AddListener(OnVideoButtonClicked);
+        }
+    }
+
     /// <summary>
     /// Set the visual info for this node.
     /// </summary>
@@ -21,6 +36,50 @@ public class NodeUI : MonoBehaviour
             titleText.text = title ?? id;
         if (thumbnailImage != null)
             thumbnailImage.sprite = thumbnail;
+    }
+
+    /// <summary>
+    /// Assign the video file and CDN base for this node. Wire the button to play.
+    /// </summary>
+    public void SetVideo(string video, string cdnBase)
+    {
+        this.videoFileName = video;
+        this.cdnBase = cdnBase;
+        if (VideoButton != null)
+        {
+            VideoButton.onClick.RemoveListener(OnVideoButtonClicked);
+            VideoButton.onClick.AddListener(OnVideoButtonClicked);
+        }
+    }
+
+    private void OnVideoButtonClicked()
+    {
+        if (string.IsNullOrEmpty(videoFileName))
+        {
+            Debug.LogWarning($"NodeUI '{nodeId}' has no video file assigned.");
+            return;
+        }
+
+        string url;
+        if (string.IsNullOrEmpty(cdnBase))
+        {
+            // Local StreamingAssets path
+            url = System.IO.Path.Combine(Application.streamingAssetsPath, "Videos", videoFileName);
+        }
+        else
+        {
+            // CDN URL
+            url = cdnBase.EndsWith("/") ? (cdnBase + videoFileName) : ($"{cdnBase}/{videoFileName}");
+        }
+
+        var player = GameObject.FindObjectOfType<VideoPlayerController>();
+        if (player == null)
+        {
+            Debug.LogError("VideoPlayerController not found in scene.");
+            return;
+        }
+        player.PlayVideo(url);
+        GameUIController.Instance.HideTreeView();
     }
 
     /// <summary>

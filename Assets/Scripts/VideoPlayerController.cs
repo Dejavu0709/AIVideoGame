@@ -2,8 +2,9 @@ using System;
 using UnityEngine;
 using UnityEngine.Events;
 using RenderHeads.Media.AVProVideo;
+using NexgenDragon;
 
-public class VideoPlayerController : MonoBehaviour
+public class VideoPlayerController : MonoSingleton<VideoPlayerController>
 {
     [Header("AVPro Video Components")]
     public MediaPlayer mediaPlayer;
