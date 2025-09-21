@@ -54,22 +54,25 @@ public class NodeUI : MonoBehaviour
 
     private void OnVideoButtonClicked()
     {
-        if (string.IsNullOrEmpty(videoFileName))
+        if (string.IsNullOrEmpty(nodeId))
         {
-            Debug.LogWarning($"NodeUI '{nodeId}' has no video file assigned.");
+            Debug.LogWarning("NodeUI has no nodeId assigned.");
             return;
         }
 
-        string url = BranchingVideoGameManager.Instance.GetVideoUrl(videoFileName);
-
-        var player = GameObject.FindObjectOfType<VideoPlayerController>();
-        if (player == null)
+        // Route through BranchingVideoGameManager so currentNode and branching logic stay consistent
+        var manager = BranchingVideoGameManager.Instance;
+        if (manager == null)
         {
-            Debug.LogError("VideoPlayerController not found in scene.");
+            Debug.LogError("BranchingVideoGameManager instance not found.");
             return;
         }
-        player.PlayVideo(url);
-        GameUIController.Instance.HideTreeView();
+
+        manager.PlayNode(nodeId);
+
+        // Hide the tree view after initiating playback
+        if (GameUIController.Instance != null)
+            GameUIController.Instance.HideTreeView();
     }
 
     /// <summary>
