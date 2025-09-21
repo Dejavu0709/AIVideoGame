@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using UnityEngine.Networking;
-using UnityEditor.IMGUI.Controls;
-using UnityEditor;
 using NexgenDragon;
 public class BranchingVideoGameManager : MonoSingleton<BranchingVideoGameManager>
 {

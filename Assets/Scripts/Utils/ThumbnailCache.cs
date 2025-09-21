@@ -28,7 +28,8 @@ public static class ThumbnailCache
 
             // 1) Check StreamingAssets
             string streamingPath = StreamingFilePath(streamingSubfolder, fileName);
-            if (File.Exists(streamingPath))
+            bool streamingIsUri = streamingPath.Contains("://") || streamingPath.Contains(":///");
+            if (!streamingIsUri && File.Exists(streamingPath))
             {
                 if (TryLoadSpriteFromFile(streamingPath, out sprite))
                     return true;
@@ -52,6 +53,32 @@ public static class ThumbnailCache
             {
                 onLoaded?.Invoke(localSprite);
                 yield break;
+            }
+
+            // If StreamingAssets path is not a regular file (e.g., Android/WebGL), try to load it via UnityWebRequest
+            string fileName = nodeId + ".png";
+            string streamingPath = StreamingFilePath(streamingSubfolder, fileName);
+            bool streamingIsUri = streamingPath.Contains("://") || streamingPath.Contains(":///");
+            if (streamingIsUri)
+            {
+                using (UnityWebRequest req = UnityWebRequestTexture.GetTexture(streamingPath))
+                {
+                    yield return req.SendWebRequest();
+#if UNITY_2020_2_OR_NEWER
+                    if (req.result == UnityWebRequest.Result.Success)
+#else
+                    if (!(req.isNetworkError || req.isHttpError))
+#endif
+                    {
+                        var tex = DownloadHandlerTexture.GetContent(req);
+                        if (tex != null)
+                        {
+                            var sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+                            onLoaded?.Invoke(sprite);
+                            yield break;
+                        }
+                    }
+                }
             }
 
             // 3) Download from CDN if available
