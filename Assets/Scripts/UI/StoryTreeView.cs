@@ -187,8 +187,7 @@ public class StoryTreeView : MonoBehaviour
             foreach (var toId in children[fromId])
             {
                 if (!_nodeUIs.ContainsKey(toId)) continue;
-                // Only draw forward edges to the immediate next level to avoid unintended cross-links
-                if (!level.TryGetValue(fromId, out var lf) || !level.TryGetValue(toId, out var lt) || lt != lf + 1) continue;
+                if (!level.TryGetValue(fromId, out var lf) || !level.TryGetValue(toId, out var lt)) continue;
                 var toRt = _nodeUIs[toId].GetComponent<RectTransform>();
 
                 string key = fromId + "->" + toId;
@@ -197,7 +196,22 @@ public class StoryTreeView : MonoBehaviour
 
                 var edge = CreateEdge();
                 edge.name = $"Edge_{fromId}_to_{toId}";
-                edge.Connect(fromRt, toRt);
+                // Draw horizontal edges for next-level links, vertical for same-level links.
+                if (lt == lf + 1)
+                {
+                    edge.Connect(fromRt, toRt, UIEdge.Axis.Horizontal);
+                }
+                else if (lt == lf)
+                {
+                    edge.Connect(fromRt, toRt, UIEdge.Axis.Vertical);
+                }
+                else
+                {
+                    // Skip cross-level non-adjacent edges to avoid clutter
+                    DestroyImmediate(edge.gameObject);
+                    addedEdges.Remove(key);
+                    continue;
+                }
                 _edges.Add(edge);
             }
         }

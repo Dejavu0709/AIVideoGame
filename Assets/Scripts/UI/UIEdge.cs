@@ -24,35 +24,46 @@ public class UIEdge : MonoBehaviour
         */
     }
 
+    public enum Axis { Auto, Horizontal, Vertical }
+
     /// <summary>
-    /// Connect two UI nodes using side midpoints (left/right/top/bottom) depending on relative layout.
+    /// Connect two UI nodes using side midpoints. If axis is specified, force side selection accordingly.
     /// </summary>
-    public void Connect(RectTransform from, RectTransform to)
+    public void Connect(RectTransform from, RectTransform to, Axis axis = Axis.Auto)
     {
         if (from == null || to == null) return;
 
         var parentRt = _rt.parent as RectTransform;
         if (parentRt == null) parentRt = _rt; // fallback
 
-        // Determine relative positions in parent local space
-        Vector2 fromCenterLocal = WorldToLocalIn(parentRt, from.TransformPoint(from.rect.center));
-        Vector2 toCenterLocal = WorldToLocalIn(parentRt, to.TransformPoint(to.rect.center));
+        // Determine bounds rects (prefer NodeUI background image if provided)
+        RectTransform fromBounds = ResolveBoundsRect(from);
+        RectTransform toBounds = ResolveBoundsRect(to);
+
+        // Determine relative positions in parent local space using bounds rects
+        Vector2 fromCenterLocal = WorldToLocalIn(parentRt, fromBounds.TransformPoint(fromBounds.rect.center));
+        Vector2 toCenterLocal = WorldToLocalIn(parentRt, toBounds.TransformPoint(toBounds.rect.center));
         Vector2 delta = toCenterLocal - fromCenterLocal;
 
-        // Choose connection sides: prefer horizontal if |dx| >= |dy|, else vertical
+        // Decide axis if Auto
+        Axis chosen = axis;
+        if (chosen == Axis.Auto)
+        {
+            chosen = Mathf.Abs(delta.x) >= Mathf.Abs(delta.y) ? Axis.Horizontal : Axis.Vertical;
+        }
+
+        // Choose connection sides based on axis
         Vector3 fromWorld;
         Vector3 toWorld;
-        if (Mathf.Abs(delta.x) >= Mathf.Abs(delta.y))
+        if (chosen == Axis.Horizontal)
         {
-            // Horizontal connection
-            fromWorld = GetSideWorldPoint(from, delta.x >= 0 ? Side.Right : Side.Left);
-            toWorld = GetSideWorldPoint(to, delta.x >= 0 ? Side.Left : Side.Right);
+            fromWorld = GetSideWorldPoint(fromBounds, delta.x >= 0 ? Side.Right : Side.Left);
+            toWorld = GetSideWorldPoint(toBounds, delta.x >= 0 ? Side.Left : Side.Right);
         }
-        else
+        else // Vertical
         {
-            // Vertical connection
-            fromWorld = GetSideWorldPoint(from, delta.y >= 0 ? Side.Top : Side.Bottom);
-            toWorld = GetSideWorldPoint(to, delta.y >= 0 ? Side.Bottom : Side.Top);
+            fromWorld = GetSideWorldPoint(fromBounds, delta.y >= 0 ? Side.Top : Side.Bottom);
+            toWorld = GetSideWorldPoint(toBounds, delta.y >= 0 ? Side.Bottom : Side.Top);
         }
 
         Vector2 localA = WorldToLocalIn(parentRt, fromWorld);
@@ -92,6 +103,20 @@ public class UIEdge : MonoBehaviour
                 break;
         }
         return rt.TransformPoint(local);
+    }
+
+    private static RectTransform ResolveBoundsRect(RectTransform rt)
+    {
+        if (rt == null) return null;
+        var node = rt.GetComponent<NodeUI>();
+        if (node == null)
+            node = rt.GetComponentInParent<NodeUI>();
+        if (node != null)
+        {
+            var b = node.GetBoundsRect();
+            if (b != null) return b;
+        }
+        return rt;
     }
 
     private static Vector2 WorldToLocalIn(RectTransform parent, Vector3 world)
