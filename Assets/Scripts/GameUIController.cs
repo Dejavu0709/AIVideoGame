@@ -24,7 +24,7 @@ public class GameUIController : MonoBehaviour
 
     public GameObject functionPanel;
 
-
+    public StoryTreeView TreeView;
     private List<Button> currentChoiceButtons = new List<Button>();
     private System.Action<string> onChoiceSelected;
     private System.Action<bool> onQTECompleted;
@@ -345,7 +345,7 @@ public class GameUIController : MonoBehaviour
     }
 
 
-     private IEnumerator FadeInCanvas(CanvasGroup canvasGroup)
+    private IEnumerator FadeInCanvas(CanvasGroup canvasGroup)
     {
         if (canvasGroup != null)
         {
@@ -361,5 +361,16 @@ public class GameUIController : MonoBehaviour
             Debug.Log("Fade in completed");
             canvasGroup.alpha = 1f;
         }
+    }
+    
+    public void ShowTreeView()
+    {
+        if (TreeView == null)
+        {
+            Debug.LogError("TreeView is not assigned!");
+            return;
+        }
+        TreeView.gameObject.SetActive(true);
+        TreeView.Build(BranchingVideoGameManager.GameData);
     }
 }

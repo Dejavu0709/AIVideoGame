@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using UnityEngine.Networking;
+using UnityEditor.IMGUI.Controls;
 public class BranchingVideoGameManager : MonoBehaviour
 {
     [Header("Components")]
@@ -15,12 +16,15 @@ public class BranchingVideoGameManager : MonoBehaviour
     
     [Header("Settings")]
     public float delayBeforeShowingChoices = 1f;
-    
-    private GameData gameData;
+
+    [Header("Game Data")]
+    private static GameData gameData;
     private GameNode currentNode;
     private Dictionary<string, GameNode> nodeLookup;
     private bool isGameActive = false;
-    
+
+    public static GameData GameData { get => gameData; set => gameData = value; }
+
     void Start()
     {
         InitializeGame();
