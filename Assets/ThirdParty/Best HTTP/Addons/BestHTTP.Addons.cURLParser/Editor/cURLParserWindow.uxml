@@ -1,0 +1,24 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+
+    <ui:Box style="flex-grow: 1; flex-shrink: 1; border-color: rgb(80, 80, 80); border-radius: 5px; padding: 2px;">
+        <ui:ScrollView scroll-deceleration-rate="0,135" elasticity="0,1" style="flex-grow: 1; flex-shrink: 1;">
+            <ui:TextField picking-mode="Ignore" label="cURL Command" multiline="true" view-data-key="cURLParser_cURLCommand" name="cURLCommand" style="flex-grow: 1;" />
+            <ui:Box style="flex-direction: row;">
+                <uie:EnumField label="Request Usage" value="Center" view-data-key="cURLParser_RequestUsageType" name="RequestUsageType" />
+            </ui:Box>
+            <ui:Button text="Parse" display-tooltip-when-elided="true" name="ParseButton" />
+        </ui:ScrollView>
+    </ui:Box>
+    <ui:Box style="flex-grow: 1; flex-shrink: 1; border-color: rgb(80, 80, 80); border-radius: 5px; padding: 2px;">
+        <ui:ScrollView scroll-deceleration-rate="0,135" elasticity="0,1" style="flex-grow: 1; flex-shrink: 1;">
+            <ui:Label picking-mode="Ignore" label="Output" multiline="true" readonly="false" name="CSharpOutput" style="flex-grow: 1; flex-shrink: 1;" />
+        </ui:ScrollView>
+        <ui:Button text="Copy to Clipboard" display-tooltip-when-elided="true" name="copyToClipboard" />
+    </ui:Box>
+
+    <uie:Toolbar style="margin-top: 5px;">
+      <ui:Label text="Best HTTP cURL Parser Addon 1.0.3 besthttp@gmail.com" />
+      <uie:ToolbarSpacer style="width: auto; flex-grow: 1;" />
+      <uie:ToolbarButton name="HelpButton" text="?" />
+    </uie:Toolbar>
+</ui:UXML>

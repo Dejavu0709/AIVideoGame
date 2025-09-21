@@ -1,0 +1,19 @@
+{
+    "name": "BestHTTP.Addons.TLSSecurity",
+    "references": [
+        "GUID:9069ac25d95ca17448a247f3bb1c769f"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [
+        "WebGL"
+    ],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "!BESTHTTP_DISABLE_ALTERNATE_SSL"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

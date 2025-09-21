@@ -26,6 +26,9 @@ public class StoryTreeView : MonoBehaviour
 
     [Header("Thumbnails")]
     public string thumbnailsResourcesFolder = "Thumbnails"; // Resources/Thumbnails
+    [Tooltip("Folder name under StreamingAssets to look for prepacked thumbnails (e.g., StreamingAssets/Thumbnails)")]
+    public string streamingThumbnailsFolder = "Thumbnails";
+    [Tooltip("Placeholder shown before thumbnail finishes loading")] public Sprite defaultThumbnail;
 
 
 
@@ -161,9 +164,27 @@ public class StoryTreeView : MonoBehaviour
 
                 // Set info: title and thumbnail
                 string title = !string.IsNullOrEmpty(n.question) ? n.question : n.id;
-                var sprite = LoadThumbnailForNode(n);
-                nodeUI.SetInfo(n.id, title, sprite);
+                var sprite = LoadThumbnailForNode(n, data?.meta?.cdnBase);
+                if (sprite == null)
+                {
+                       // Ensure thumbnail is loaded or downloaded and cached, then applied when ready
+                    StartCoroutine(ThumbnailCache.LoadOrDownload(
+                    n.id,
+                    data?.meta?.cdnBase,
+                    streamingThumbnailsFolder,
+                    loaded =>
+                    {
+                        if (nodeUI != null && nodeUI.thumbnailImage != null && loaded != null)
+                        {
+                            nodeUI.thumbnailImage.sprite = loaded;
+                        }
+                    }));
 
+                }
+                
+                nodeUI.SetInfo(n.id, title, sprite != null ? sprite : defaultThumbnail);
+
+             
                 // Position: x by level, y evenly distributed and centered within this level
                 var rt = nodeUI.GetComponent<RectTransform>();
                 Vector2 pos = new Vector2(l * horizontalSpacing,
@@ -267,14 +288,20 @@ public class StoryTreeView : MonoBehaviour
         return edge;
     }
 
-    private Sprite LoadThumbnailForNode(GameNode n)
+    private Sprite LoadThumbnailForNode(GameNode n, string cdnBase)
     {
-        // Try by node id
+        // 1) Try local files: StreamingAssets/Thumbnails and then persistent cache
+        if (ThumbnailCache.TryLoadLocal(n.id, streamingThumbnailsFolder, out var localSprite))
+        {
+            return localSprite;
+        }
+
+        // 2) Try by Resources (fallback)
         string pathById = string.IsNullOrEmpty(thumbnailsResourcesFolder) ? n.id : ($"{thumbnailsResourcesFolder}/{n.id}");
         var sprite = Resources.Load<Sprite>(pathById);
         if (sprite != null) return sprite;
 
-        // Try by video base name (without extension)
+        // 3) Try by video base name (without extension) in Resources
         string baseName = n.video;
         if (!string.IsNullOrEmpty(baseName))
         {
