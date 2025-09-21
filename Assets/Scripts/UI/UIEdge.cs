@@ -8,20 +8,18 @@ using UnityEngine.UI;
 public class UIEdge : MonoBehaviour
 {
     public Image lineImage; // Assign a 1x1 white sprite or a 9-sliced line sprite
+    [Tooltip("Push the line endpoints slightly outside the node bounds to avoid overlapping the visuals.")]
+    public float endpointMargin = 8f;
 
     private RectTransform _rt;
 
     private void Awake()
     {
         _rt = GetComponent<RectTransform>();
-        /*
-        if (lineImage == null)
+        if (lineImage != null)
         {
-            lineImage = gameObject.AddComponent<Image>();
-            lineImage.color = Color.white;
+            lineImage.raycastTarget = false;
         }
-        lineImage.raycastTarget = false;
-        */
     }
 
     public enum Axis { Auto, Horizontal, Vertical }
@@ -82,24 +80,24 @@ public class UIEdge : MonoBehaviour
 
     private enum Side { Left, Right, Top, Bottom }
 
-    private static Vector3 GetSideWorldPoint(RectTransform rt, Side side)
+    private Vector3 GetSideWorldPoint(RectTransform rt, Side side)
     {
         Rect r = rt.rect;
         Vector2 local;
         switch (side)
         {
             case Side.Left:
-                local = new Vector2(r.xMin, (r.yMin + r.yMax) * 0.5f);
+                local = new Vector2(r.xMin - endpointMargin, (r.yMin + r.yMax) * 0.5f);
                 break;
             case Side.Right:
-                local = new Vector2(r.xMax, (r.yMin + r.yMax) * 0.5f);
+                local = new Vector2(r.xMax + endpointMargin, (r.yMin + r.yMax) * 0.5f);
                 break;
             case Side.Top:
-                local = new Vector2((r.xMin + r.xMax) * 0.5f, r.yMax);
+                local = new Vector2((r.xMin + r.xMax) * 0.5f, r.yMax + endpointMargin);
                 break;
             case Side.Bottom:
             default:
-                local = new Vector2((r.xMin + r.xMax) * 0.5f, r.yMin);
+                local = new Vector2((r.xMin + r.xMax) * 0.5f, r.yMin - endpointMargin);
                 break;
         }
         return rt.TransformPoint(local);
@@ -121,11 +119,19 @@ public class UIEdge : MonoBehaviour
 
     private static Vector2 WorldToLocalIn(RectTransform parent, Vector3 world)
     {
+        // Prefer using the Canvas's worldCamera when available (Screen Space - Camera)
+        Canvas canvas = parent != null ? parent.GetComponentInParent<Canvas>() : null;
+        Camera cam = null;
+        if (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+        {
+            cam = canvas.worldCamera;
+        }
+
         Vector2 local;
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
             parent,
-            RectTransformUtility.WorldToScreenPoint(null, world),
-            null,
+            RectTransformUtility.WorldToScreenPoint(cam, world),
+            cam,
             out local);
         return local;
     }

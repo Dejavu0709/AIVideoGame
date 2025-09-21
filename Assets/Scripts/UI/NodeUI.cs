@@ -60,17 +60,7 @@ public class NodeUI : MonoBehaviour
             return;
         }
 
-        string url;
-        if (string.IsNullOrEmpty(cdnBase))
-        {
-            // Local StreamingAssets path
-            url = System.IO.Path.Combine(Application.streamingAssetsPath, "Videos", videoFileName);
-        }
-        else
-        {
-            // CDN URL
-            url = cdnBase.EndsWith("/") ? (cdnBase + videoFileName) : ($"{cdnBase}/{videoFileName}");
-        }
+        string url = BranchingVideoGameManager.Instance.GetVideoUrl(videoFileName);
 
         var player = GameObject.FindObjectOfType<VideoPlayerController>();
         if (player == null)

@@ -80,6 +80,13 @@ public class StoryTreeView : MonoBehaviour
             edgesContainer.anchoredPosition = Vector2.zero;
         }
 
+        // Ensure edges are rendered behind nodes
+        if (edgesContainer != null && nodesContainer != null)
+        {
+            edgesContainer.SetSiblingIndex(0);
+            nodesContainer.SetSiblingIndex(1);
+        }
+
         // Index nodes by id
         var nodeById = data.nodes.ToDictionary(n => n.id, n => n);
 
