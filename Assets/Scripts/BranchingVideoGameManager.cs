@@ -96,7 +96,7 @@ private IEnumerator LoadGameDataFromUrl()
                         // Create node lookup dictionary for fast access
         CreateNodeLookup();
                 // Start the game after data is loaded
-                StartGame();
+                //StartGame();
             }
             catch (System.Exception e)
             {

@@ -24,7 +24,7 @@ public static class ThumbnailCache
         public static bool TryLoadLocal(string nodeId, string streamingSubfolder, out Sprite sprite)
         {
             sprite = null;
-            string fileName = nodeId + ".png";
+            string fileName = nodeId + ".jpg";
 
             // 1) Check StreamingAssets
             string streamingPath = StreamingFilePath(streamingSubfolder, fileName);

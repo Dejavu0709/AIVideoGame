@@ -223,13 +223,15 @@ public class StoryTreeView : MonoBehaviour
         foreach (var fromId in children.Keys)
         {
             if (!_nodeUIs.ContainsKey(fromId)) continue;
-            var fromRt = _nodeUIs[fromId].GetComponent<RectTransform>();
+            // Use GetBoundsRect() to get the actual bounds rectangle used for edge calculations
+            var fromRt = _nodeUIs[fromId].GetBoundsRect();
 
             foreach (var toId in children[fromId])
             {
                 if (!_nodeUIs.ContainsKey(toId)) continue;
                 if (!level.TryGetValue(fromId, out var lf) || !level.TryGetValue(toId, out var lt)) continue;
-                var toRt = _nodeUIs[toId].GetComponent<RectTransform>();
+                // Use GetBoundsRect() to get the actual bounds rectangle used for edge calculations
+                var toRt = _nodeUIs[toId].GetBoundsRect();
 
                 string key = fromId + "->" + toId;
                 if (addedEdges.Contains(key)) continue;
@@ -298,7 +300,7 @@ public class StoryTreeView : MonoBehaviour
             rt.anchorMax = new Vector2(0.5f, 0.5f);
             rt.pivot = new Vector2(0.5f, 0.5f);
             var img = go.GetComponent<Image>();
-            img.color = Color.white;
+            //img.color = Color.white;
             edge = go.GetComponent<UIEdge>();
             edge.lineImage = img;
         }
@@ -311,18 +313,22 @@ public class StoryTreeView : MonoBehaviour
     private Sprite LoadThumbnailForNode(GameNode n, string cdnBase)
     {
         // 1) Try local files: StreamingAssets/Thumbnails and then persistent cache
-        if (ThumbnailCache.TryLoadLocal(n.id, streamingThumbnailsFolder, out var localSprite))
-        {
-            return localSprite;
-        }
+        //if (ThumbnailCache.TryLoadLocal(n.video.Substring(0, n.video.LastIndexOf('.')), streamingThumbnailsFolder, out var localSprite))
+       // {
+        //    return localSprite;
+        //}
 
         // 2) Try by Resources (fallback)
-        string pathById = string.IsNullOrEmpty(thumbnailsResourcesFolder) ? n.id : ($"{thumbnailsResourcesFolder}/{n.id}");
-        var sprite = Resources.Load<Sprite>(pathById);
-        if (sprite != null) return sprite;
+       // string pathById = string.IsNullOrEmpty(thumbnailsResourcesFolder) ? n.video.Substring(0, n.video.LastIndexOf('.')) : ($"{thumbnailsResourcesFolder}/{n.id}");
+      //  var sprite = Resources.Load<Sprite>(pathById);
+        //if (sprite != null) return sprite;
 
         // 3) Try by video base name (without extension) in Resources
-        string baseName = n.video;
+        Sprite sprite = null;
+        string baseName = n.video.Substring(0, n.video.LastIndexOf('.'));
+        sprite = Resources.Load<Sprite>(baseName);
+        if (sprite != null) return sprite;
+        Debug.Log(baseName);
         if (!string.IsNullOrEmpty(baseName))
         {
             int dot = baseName.LastIndexOf('.')

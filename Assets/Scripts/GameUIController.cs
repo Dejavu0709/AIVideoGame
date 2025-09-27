@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.Collections;
 using NexgenDragon;
+using Michsky.UI.Dark;
 
 public class GameUIController : MonoSingleton<GameUIController>
 {
@@ -26,6 +27,8 @@ public class GameUIController : MonoSingleton<GameUIController>
     public GameObject functionPanel;
 
     public StoryTreeView TreeView;
+
+    public Button playButton;
     private List<Button> currentChoiceButtons = new List<Button>();
     private System.Action<string> onChoiceSelected;
     private System.Action<bool> onQTECompleted;
@@ -33,6 +36,8 @@ public class GameUIController : MonoSingleton<GameUIController>
     private CanvasGroup qtePanelCanvasGroup;
 
     public CanvasGroup mainCanvasGroup;
+
+    public ModalWindowManager MainView;
 
     void Start()
     {
@@ -378,5 +383,18 @@ public class GameUIController : MonoSingleton<GameUIController>
     public void HideTreeView()
     {
         TreeView.gameObject.SetActive(false);
+    }
+
+    public void BackToMainMenu()
+    {
+        HideTreeView();
+        MainView.gameObject.SetActive(false);
+    }
+
+    public void OnPlayButtonClicked()
+    {
+        Debug.Log("OnPlayButtonClicked");
+        MainView.gameObject.SetActive(true);
+        BranchingVideoGameManager.Instance.StartGame();
     }
 }

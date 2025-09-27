@@ -69,6 +69,17 @@ public class UIEdge : MonoBehaviour
 
         Vector2 dir = (localB - localA);
         float length = dir.magnitude;
+        
+        // Apply endpoint margin by shortening the line from both ends
+        if (length > endpointMargin * 2f)
+        {
+            Vector2 dirNormalized = dir.normalized;
+            localA += dirNormalized * endpointMargin;
+            localB -= dirNormalized * endpointMargin;
+            dir = (localB - localA);
+            length = dir.magnitude;
+        }
+        
         Vector2 mid = (localA + localB) * 0.5f;
 
         // Place the edge in parent space
@@ -87,17 +98,21 @@ public class UIEdge : MonoBehaviour
         switch (side)
         {
             case Side.Left:
-                local = new Vector2(r.xMin - endpointMargin, (r.yMin + r.yMax) * 0.5f);
+                // Connect to the exact left edge center
+                local = new Vector2(r.xMin, (r.yMin + r.yMax) * 0.5f);
                 break;
             case Side.Right:
-                local = new Vector2(r.xMax + endpointMargin, (r.yMin + r.yMax) * 0.5f);
+                // Connect to the exact right edge center
+                local = new Vector2(r.xMax, (r.yMin + r.yMax) * 0.5f);
                 break;
             case Side.Top:
-                local = new Vector2((r.xMin + r.xMax) * 0.5f, r.yMax + endpointMargin);
+                // Connect to the exact top edge center
+                local = new Vector2((r.xMin + r.xMax) * 0.5f, r.yMax);
                 break;
             case Side.Bottom:
             default:
-                local = new Vector2((r.xMin + r.xMax) * 0.5f, r.yMin - endpointMargin);
+                // Connect to the exact bottom edge center
+                local = new Vector2((r.xMin + r.xMax) * 0.5f, r.yMin);
                 break;
         }
         return rt.TransformPoint(local);
