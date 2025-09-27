@@ -37,16 +37,13 @@ public class BranchingVideoGameManager : MonoSingleton<BranchingVideoGameManager
         {
             Debug.LogError("Failed to load game data!");
             return;
-        }
-    
-        
+        }   
         // Setup video controller events
         if (videoController != null)
         {
             videoController.OnVideoFinished.AddListener(OnVideoFinished);
             videoController.OnVideoStarted.AddListener(OnVideoStarted);
         }
-    
     }
     
    // Replace the existing LoadGameData method with this implementation
@@ -83,20 +80,23 @@ private IEnumerator LoadGameDataFromUrl()
     
     using (UnityWebRequest request = UnityWebRequest.Get(gameDataUrl))
     {
+        Debug.Log($"1Loading game data from URL: {gameDataUrl}");
         // Send the request and wait for it to complete
         yield return request.SendWebRequest();
+        Debug.Log($"2Loading game data from URL: {gameDataUrl}");
         
         if (request.result == UnityWebRequest.Result.Success)
         {
             try
             {
+                Debug.Log($"get game data from URL: {request.downloadHandler.text}");
                 // Parse the JSON data
                 gameData = JsonUtility.FromJson<GameData>(request.downloadHandler.text);
                 Debug.Log($"Successfully loaded game data from URL: {gameData.meta.title}");
                         // Create node lookup dictionary for fast access
-        CreateNodeLookup();
+                CreateNodeLookup();
                 // Start the game after data is loaded
-                //StartGame();
+                StartGame();
             }
             catch (System.Exception e)
             {
@@ -161,6 +161,7 @@ private void ShowErrorMessage(string message)
     
     public void PlayNode(string nodeId)
     {
+        Debug.Log("PlayNode");
         if (!isGameActive)
             return;
             
@@ -176,7 +177,7 @@ private void ShowErrorMessage(string message)
         // Hide UI while video plays
         if (uiController != null)
             uiController.HideAllUI();
-         uiController.functionPanel.SetActive(true);
+        // uiController.functionPanel.SetActive(true);
         // Play the video
         if (videoController != null && !string.IsNullOrEmpty(currentNode.video))
         {
@@ -192,8 +193,15 @@ private void ShowErrorMessage(string message)
     
  public string GetVideoUrl(string videoFileName)
 {
+        gameData.meta.cdnBase = "https://636c-cloud1-7gwlsz5m226cfca9-1369289063.tcb.qcloud.la/AIVideoGame/Videos/";
+        string cdnWeb = gameData.meta.cdnBase;
+        if (!string.IsNullOrEmpty(cdnWeb))
+            return cdnWeb.EndsWith("/") ? (cdnWeb + videoFileName) : ($"{cdnWeb}/{videoFileName}");
+
+
+
     // Build local StreamingAssets path
-    string localPath = System.IO.Path.Combine(Application.streamingAssetsPath, "Videos", videoFileName);
+        string localPath = System.IO.Path.Combine(Application.streamingAssetsPath, "Videos", videoFileName);
 
 #if UNITY_ANDROID && !UNITY_EDITOR
     // Android: StreamingAssets lives inside the APK (jar:file). File.Exists cannot be used.
@@ -203,7 +211,7 @@ private void ShowErrorMessage(string message)
 #elif UNITY_WEBGL && !UNITY_EDITOR
     // WebGL: StreamingAssets are served by the web server; we cannot File.Exists here.
     // Prefer CDN if configured for better delivery; otherwise fallback to local path.
-    string cdnWeb = gameData?.meta?.cdnBase;
+    string cdnWeb = gameData.meta.cdnBase;
     if (!string.IsNullOrEmpty(cdnWeb))
         return cdnWeb.EndsWith("/") ? (cdnWeb + videoFileName) : ($"{cdnWeb}/{videoFileName}");
     return localPath;
@@ -234,7 +242,7 @@ private void ShowErrorMessage(string message)
 
         if (uiController != null)
         {
-            uiController.functionPanel.SetActive(true);
+            //uiController.functionPanel.SetActive(true);
             uiController.ShowAllCanvasGroup();
         }
     }

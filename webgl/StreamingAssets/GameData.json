@@ -1,0 +1,237 @@
+{
+  "meta": {
+    "title": "LinearGame Demo",
+    "cdnBase": "https://lgdemogame.s3.ap-northeast-3.amazonaws.com/memory",
+    "startNodeId": "N01"
+  },
+  "nodes": [
+    {
+      "id": "N01",
+      "video": "01.mp4",
+      "question": "你愿意接收套件吗？",
+      "choices": [
+        {"label": "接收套件", "next": "N02"},
+        {"label": "拒绝接收", "next": "N02"}
+      ]
+    },
+    {
+      "id": "N02",
+      "video": "02.mp4",
+      "question": "是否拿起这个设备？",
+      "choices": [
+        {"label": "拿起设备", "next": "N03"},
+        {"label": "再观望一下", "next": "N03"}
+      ]
+    },
+    {
+      "id": "N03",
+      "video": "03.mp4",
+      "question": "你是否可以回忆起她？",
+      "choices": [ 
+        {"label": "时间太久远了想不起来", "next": "N04"},
+        {"label": "好像有点印象", "next": "N04"} 
+      ]
+    },
+    {
+      "id": "N04",
+      "video": "04-1.mp4",
+      "question": "寻求帮助",
+      "choices": [ 
+        { "label": "给我点帮助", "next": "N05" },
+        { "label": "我实在想不起来", "next": "N05" }
+       ]
+    },
+    {
+      "id": "N05",
+      "video": "05-1.mp4",
+      "question": "可以让她搜索你的iCloud照片吗？",
+      "choices": [
+        { "label": "那个时候还没有这些电子照片", "next": "N06" },
+        { "label": "不可以！有我的全裸自拍呢！", "next": "N06" }
+      ]
+    },
+    {
+      "id": "N06",
+      "video": "06.mp4",
+      "question": "体验新科技",
+      "choices": [
+        { "label": "闭上眼睛，感受回忆", "next": "N106" }
+      ]
+    },
+    {
+      "id": "N106",
+      "video": "08.mp4",
+      "question": "选择一张照片开启回忆",
+      "choices": [
+        { "label": "照片1", "next": "N07" },
+        { "label": "照片2", "next": "N08" },
+        { "label": "照片3", "next": "N09" }
+      ]
+    },
+    {
+      "id": "N07",
+      "video": "09-1.mp4",  
+      "question": "照片回忆结束，再选择一张照片",
+      "choices": [
+        { "label": "照片2", "next": "N08" },
+        { "label": "照片3", "next": "N09" }
+      ]
+    },
+    {
+      "id": "N08",
+      "video": "09-2.mp4",  
+      "question": "照片回忆结束，再选择一张照片",
+      "choices": [
+        { "label": "照片1", "next": "N07" },
+        { "label": "照片3", "next": "N09" }
+      ]
+    },
+    {
+      "id": "N09",
+      "video": "09-3.mp4",  
+      "question": "照片回忆结束，再选择一张照片",
+      "choices": [
+        { "label": "照片1", "next": "N07" },
+        { "label": "照片2", "next": "N08" },
+        { "label": "不想再回忆，离开这里", "next": "N10" }
+      ]
+    },
+    {
+      "id": "N10",
+      "video": "11.mp4",  
+      "question": "你要停下来吗？",
+      "choices": [
+        { "label": "不，继续回忆", "next": "N11" },
+        { "label": "我犹豫一下", "next": "N11" }
+      ]
+    },
+    {
+      "id": "N11",
+      "video": "12-1.mp4",  
+      "question": "请再次选择一张被划掉的照片",
+      "choices": [
+        { "label": "照片1", "next": "N12" },
+        { "label": "照片2", "next": "N13" },
+        { "label": "照片3", "next": "N14" },
+        { "label": "照片4", "next": "N15" }
+      ]
+    },
+    {
+      "id": "N12",
+      "video": "13-1.mp4",  
+      "question": "照片回忆结束，再选择一张照片",
+      "choices": [
+        { "label": "照片2", "next": "N13" },
+        { "label": "照片3", "next": "N14" },
+        { "label": "照片4", "next": "N15" }
+      ]
+    },
+    {
+      "id": "N13",
+      "video": "13-2.mp4",  
+      "question": "照片回忆结束，再选择一张照片",
+      "choices": [
+        { "label": "照片1", "next": "N12" },
+        { "label": "照片3", "next": "N14" },
+        { "label": "照片4", "next": "N15" }
+      ]
+    },
+    {
+      "id": "N14",
+      "video": "13-3.mp4",  
+      "question": "照片回忆结束，再选择一张照片",
+      "choices": [
+        { "label": "照片1", "next": "N12" },
+        { "label": "照片2", "next": "N13" },
+        { "label": "照片4", "next": "N15" }
+      ]
+    },
+    {
+      "id": "N15",
+      "video": "13-4.mp4",  
+      "question": "照片回忆结束，再选择一张照片",
+      "choices": [
+        { "label": "照片2", "next": "N13" },
+        { "label": "照片3", "next": "N14" },
+        { "label": "离开回忆，告知她后来的去向", "next": "N16" }
+      ]
+    },
+    {
+      "id": "N16",
+      "video": "14.mp4",  
+      "question": "是否要告诉她这是谁拍的照片？",
+      "choices": [
+        { "label": "告诉她吧，都是过去的事情了", "next": "N17" },
+        { "label": "不，打马虎眼糊弄过去", "next": "N17" }
+      ]
+    },
+    {
+      "id": "N17",
+      "video": "15.mp4",  
+      "question": "是否要接起电话？",
+      "choices": [
+        { "label": "接起电话", "next": "N18" },
+        { "label": "再等等", "next": "N19" }
+      ]
+    },
+    {
+      "id": "N18",
+      "video": "16-1.mp4",  
+      "question": "是否要告诉她情况？",
+      "choices": [
+        { "label": "展示给她看", "next": "N20" },
+        { "label": "Fuck U", "next": "N20" }
+      ]
+    },
+    {
+      "id": "N19",
+      "video": "16-2.mp4",  
+      "question": "是否要告诉她情况？",
+      "choices": [
+        { "label": "展示给她看", "next": "N20" },
+        { "label": "Fuck U", "next": "N20" }
+      ]
+    },
+    {
+      "id": "N20",
+      "video": "17.mp4",  
+      "question": "进入餐厅",
+      "choices": [
+        { "label": "进入餐厅", "next": "N21" }
+      ]
+    },
+    {
+      "id": "N21",
+      "video": "18.mp4",  
+      "question": "她离开的原因会是？",
+      "choices": [
+        { "label": "她出轨了", "next": "N22" },
+        { "label": "她厌倦了我", "next": "N22" }
+      ]
+    },
+    {
+      "id": "N22",
+      "video": "19.mp4",  
+      "question": "离开这些悲痛的记忆",
+      "choices": [
+        { "label": "离开回忆", "next": "N23" }
+      ]
+    },
+    {
+      "id": "N23",
+      "video": "20.mp4",  
+      "question": "继续进入旅途中的这张照片",
+      "choices": [
+        { "label": "进入照片", "next": "N24" }
+      ]
+    },
+    {
+      "id": "N24",
+      "video": "21.mp4",  
+      "question": "重新开始",
+      "choices": [
+        { "label": "重新开始", "next": "N01" }
+      ]
+    }
+  ]
+}

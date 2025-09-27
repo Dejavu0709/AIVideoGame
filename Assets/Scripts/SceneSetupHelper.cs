@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using RenderHeads.Media.AVProVideo;
+
 
 public class SceneSetupHelper : MonoBehaviour
 {
@@ -59,7 +59,7 @@ public class SceneSetupHelper : MonoBehaviour
         
         return gameManagerObj;
     }
-    
+
     GameObject CreateVideoPlayer()
     {
         GameObject videoPlayerObj = GameObject.Find("VideoPlayer");
@@ -67,7 +67,7 @@ public class SceneSetupHelper : MonoBehaviour
         {
             videoPlayerObj = new GameObject("VideoPlayer");
         }
-        
+        /*
         // Add MediaPlayer component
         MediaPlayer mediaPlayer = videoPlayerObj.GetComponent<MediaPlayer>();
         if (mediaPlayer == null)
@@ -87,45 +87,14 @@ public class SceneSetupHelper : MonoBehaviour
         GameObject videoDisplay = CreateVideoDisplay(videoPlayerObj);
         
         return videoPlayerObj;
+        */
+        return null;
     }
     
     GameObject CreateVideoDisplay(GameObject parent)
     {
-        GameObject displayObj = GameObject.Find("VideoDisplay");
-        if (displayObj == null)
-        {
-            displayObj = new GameObject("VideoDisplay");
-            displayObj.transform.SetParent(parent.transform);
-        }
         
-        // Add RawImage for video display
-        RawImage rawImage = displayObj.GetComponent<RawImage>();
-        if (rawImage == null)
-        {
-            rawImage = displayObj.AddComponent<RawImage>();
-        }
-        
-        // Add DisplayUGUI component
-        DisplayUGUI displayUGUI = displayObj.GetComponent<DisplayUGUI>();
-        if (displayUGUI == null)
-        {
-            displayUGUI = displayObj.AddComponent<DisplayUGUI>();
-           // displayUGUI._targetTexture = rawImage;
-        }
-        
-        // Set RectTransform to fill screen
-        RectTransform rectTransform = displayObj.GetComponent<RectTransform>();
-        if (rectTransform == null)
-        {
-            rectTransform = displayObj.AddComponent<RectTransform>();
-        }
-        
-        rectTransform.anchorMin = Vector2.zero;
-        rectTransform.anchorMax = Vector2.one;
-        rectTransform.offsetMin = Vector2.zero;
-        rectTransform.offsetMax = Vector2.zero;
-        
-        return displayObj;
+        return null;
     }
     
     GameObject CreateUICanvas()
@@ -431,14 +400,6 @@ public class SceneSetupHelper : MonoBehaviour
         }
         
         // Connect MediaPlayer to DisplayUGUI
-        MediaPlayer mediaPlayer = videoPlayer.GetComponent<MediaPlayer>();
-        DisplayUGUI displayUGUI = videoPlayer.GetComponentInChildren<DisplayUGUI>();
-        
-        if (mediaPlayer != null && displayUGUI != null && videoController != null)
-        {
-            videoController.mediaPlayer = mediaPlayer;
-            videoController.displayUGUI = displayUGUI;
-            //displayUGUI._mediaPlayer = mediaPlayer;
-        }
+      
     }
 }

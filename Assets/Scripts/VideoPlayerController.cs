@@ -1,110 +1,96 @@
 using System;
 using UnityEngine;
 using UnityEngine.Events;
-using RenderHeads.Media.AVProVideo;
 using NexgenDragon;
+using com.ootii.Messages;
 
 public class VideoPlayerController : MonoSingleton<VideoPlayerController>
 {
-    [Header("AVPro Video Components")]
-    public MediaPlayer mediaPlayer;
-    public DisplayUGUI displayUGUI;
-    
     [Header("Events")]
     public UnityEvent OnVideoFinished;
     public UnityEvent OnVideoStarted;
     
+
+    public VideoManager videoManager;
     private bool isVideoPlaying = false;
     private string currentVideoUrl = "";
+
+    void OnEnable()
+    {
+        MessageDispatcher.AddListener("VideoEnded", OnVideoEnded);
+        MessageDispatcher.AddListener("VideoStarted", OnVideoStart);
+    }
+
+    void OnDisable()
+    {
+        MessageDispatcher.RemoveListener("VideoEnded", OnVideoEnded);
+        MessageDispatcher.RemoveListener("VideoStarted", OnVideoStart);
+    }
+
     
     void Start()
     {
-        if (mediaPlayer == null)
-            mediaPlayer = GetComponent<MediaPlayer>();
+
             
-        if (mediaPlayer != null)
-        {
-            mediaPlayer.Events.AddListener(OnMediaPlayerEvent);
-        }
     }
     
-    void OnDestroy()
+    private void OnVideoEnded(IMessage message)
     {
-        if (mediaPlayer != null)
-        {
-            mediaPlayer.Events.RemoveListener(OnMediaPlayerEvent);
-        }
+        isVideoPlaying = false;
+        OnVideoFinished?.Invoke();
+    }
+
+    private void OnVideoStart(IMessage message)
+    {
+        isVideoPlaying = true;
+        OnVideoStarted?.Invoke();
     }
     
     public void PlayVideo(string videoUrl)
     {
-        if (mediaPlayer == null)
-        {
-            Debug.LogError("MediaPlayer is not assigned!");
-            return;
-        }
-        
         currentVideoUrl = videoUrl;
         Debug.Log($"Playing video: {videoUrl}");
-        
+
         // Stop current video if playing
         if (isVideoPlaying)
         {
-            mediaPlayer.Stop();
+            videoManager.Pause();
         }
-        
-        // Load and play new video
-        if (mediaPlayer.OpenMedia(MediaPathType.AbsolutePathOrURL, videoUrl, true))
-        {
-            isVideoPlaying = true;
-            //OnVideoStarted?.Invoke();
-        }
-        else
-        {
-            Debug.LogError($"Failed to load video: {videoUrl}");
-        }
+        videoManager.InitVideo(videoUrl);
     }
     
     public void StopVideo()
     {
-        if (mediaPlayer != null && isVideoPlaying)
+        if (isVideoPlaying)
         {
-            mediaPlayer.Stop();
+            videoManager.Pause();
             isVideoPlaying = false;
         }
     }
     
     public void PauseVideo()
     {
-        if (mediaPlayer != null && isVideoPlaying)
+        if (isVideoPlaying)
         {
-            mediaPlayer.Pause();
+            videoManager.Pause();
             isVideoPlaying = false;
         }
     }
     
     public void ResumeVideo()
     {
-        if (mediaPlayer != null && !isVideoPlaying)
+        if (!isVideoPlaying)
         {
-            mediaPlayer.Play();
+            videoManager.Play();
         }
     }
     
     public bool IsVideoPlaying()
     {
-        return isVideoPlaying && mediaPlayer != null;
+        return isVideoPlaying && videoManager != null;
     }
     
-    public float GetVideoProgress()
-    {
-        if (mediaPlayer != null && mediaPlayer.Info != null)
-        {
-            return (float)(mediaPlayer.Control.GetCurrentTime() / mediaPlayer.Info.GetDuration());
-        }
-        return 0f;
-    }
-    
+    /*
     private void OnMediaPlayerEvent(MediaPlayer mp, MediaPlayerEvent.EventType et, ErrorCode errorCode)
     {
         switch (et)
@@ -135,4 +121,5 @@ public class VideoPlayerController : MonoSingleton<VideoPlayerController>
                 break;
         }
     }
+    */
 }

@@ -1,0 +1,114 @@
+{
+  "meta": {
+    "title": "LinearGame Demo with QTE",
+    "cdnBase": "https://lgdemogame.s3.ap-northeast-3.amazonaws.com/memory",
+    "startNodeId": "N01"
+  },
+  "nodes": [
+    {
+      "id": "N01",
+      "video": "01.mp4",
+      "question": "你愿意接收套件吗？",
+      "choices": [
+        {"label": "接收套件", "next": "N02"},
+        {"label": "拒绝接收", "next": "N02"}
+      ]
+    },
+    {
+      "id": "N02",
+      "video": "02.mp4",
+      "question": "快速反应测试！",
+      "qte": {
+        "type": "button",
+        "duration": 3.0,
+        "successNext": "N03_SUCCESS",
+        "failNext": "N03_FAIL"
+      }
+    },
+    {
+      "id": "N03_SUCCESS",
+      "video": "03_success.mp4",
+      "question": "你成功通过了测试！是否继续？",
+      "choices": [
+        {"label": "继续前进", "next": "N04"},
+        {"label": "谨慎观察", "next": "N04"}
+      ]
+    },
+    {
+      "id": "N03_FAIL",
+      "video": "03_fail.mp4",
+      "question": "反应有点慢，但没关系。是否重试？",
+      "choices": [
+        {"label": "重新尝试", "next": "N02"},
+        {"label": "继续前进", "next": "N04"}
+      ]
+    },
+    {
+      "id": "N04",
+      "video": "04.mp4",
+      "question": "按键序列挑战！",
+      "qte": {
+        "type": "sequence",
+        "duration": 5.0,
+        "sequence": ["A", "S", "D", "F"],
+        "successNext": "N05_SUCCESS",
+        "failNext": "N05_FAIL"
+      }
+    },
+    {
+      "id": "N05_SUCCESS",
+      "video": "05_success.mp4",
+      "question": "完美的按键序列！选择下一步行动：",
+      "choices": [
+        {"label": "探索新区域", "next": "N06"},
+        {"label": "巩固当前位置", "next": "N06"}
+      ]
+    },
+    {
+      "id": "N05_FAIL",
+      "video": "05_fail.mp4",
+      "question": "按键序列失败，但经验很宝贵。下一步？",
+      "choices": [
+        {"label": "再次尝试", "next": "N04"},
+        {"label": "寻找其他路径", "next": "N06"}
+      ]
+    },
+    {
+      "id": "N06",
+      "video": "06.mp4",
+      "question": "时机把握测试！",
+      "qte": {
+        "type": "timing",
+        "duration": 4.0,
+        "successNext": "N07_SUCCESS",
+        "failNext": "N07_FAIL"
+      }
+    },
+    {
+      "id": "N07_SUCCESS",
+      "video": "07_success.mp4",
+      "question": "时机把握完美！你已经掌握了所有技能。",
+      "choices": [
+        {"label": "开始真正的冒险", "next": "N08"},
+        {"label": "再练习一下", "next": "N02"}
+      ]
+    },
+    {
+      "id": "N07_FAIL",
+      "video": "07_fail.mp4",
+      "question": "时机稍有偏差，但这是学习过程的一部分。",
+      "choices": [
+        {"label": "重新尝试时机测试", "next": "N06"},
+        {"label": "继续冒险", "next": "N08"}
+      ]
+    },
+    {
+      "id": "N08",
+      "video": "08.mp4",
+      "question": "恭喜完成所有挑战！",
+      "choices": [
+        {"label": "重新开始", "next": "N01"}
+      ]
+    }
+  ]
+}

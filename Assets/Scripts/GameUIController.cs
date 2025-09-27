@@ -24,7 +24,7 @@ public class GameUIController : MonoSingleton<GameUIController>
     public float fadeInDuration = 0.5f;
     public float fadeOutDuration = 0.3f;
 
-    public GameObject functionPanel;
+    //public GameObject functionPanel;
 
     public StoryTreeView TreeView;
 
@@ -81,7 +81,7 @@ public class GameUIController : MonoSingleton<GameUIController>
             CreateChoiceButton(choice);
         }
 
-        functionPanel.SetActive(false);
+        //functionPanel.SetActive(false);
 
         // Show the choice panel with fade in
         StartCoroutine(FadeInPanel(choicePanelCanvasGroup, choicePanel));
