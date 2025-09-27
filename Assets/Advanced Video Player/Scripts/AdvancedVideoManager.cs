@@ -37,7 +37,8 @@ public class AdvancedVideoManager : MonoBehaviour
     private void Awake() {
         //videoManager = transform.GetComponentInChildren<VideoManager>();
         //volumeManager = transform.GetComponentInChildren<VolumeScript>();
-        //playbackSpeedManager = transform.GetComponentInChildren<PlaybackRate>();
+       // playbackSpeedManager = transform.GetComponentInChildren<PlaybackRate>();
+
 
         InitAllSettings();
     }

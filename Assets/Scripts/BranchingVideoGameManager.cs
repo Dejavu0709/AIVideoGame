@@ -96,7 +96,7 @@ private IEnumerator LoadGameDataFromUrl()
                         // Create node lookup dictionary for fast access
                 CreateNodeLookup();
                 // Start the game after data is loaded
-                StartGame();
+                //StartGame();
             }
             catch (System.Exception e)
             {
@@ -197,43 +197,7 @@ private void ShowErrorMessage(string message)
         string cdnWeb = gameData.meta.cdnBase;
         if (!string.IsNullOrEmpty(cdnWeb))
             return cdnWeb.EndsWith("/") ? (cdnWeb + videoFileName) : ($"{cdnWeb}/{videoFileName}");
-
-
-
-    // Build local StreamingAssets path
-        string localPath = System.IO.Path.Combine(Application.streamingAssetsPath, "Videos", videoFileName);
-
-#if UNITY_ANDROID && !UNITY_EDITOR
-    // Android: StreamingAssets lives inside the APK (jar:file). File.Exists cannot be used.
-    // AVPro/Unity can read the jar path directly, so prefer local by returning it.
-    return localPath;
-
-#elif UNITY_WEBGL && !UNITY_EDITOR
-    // WebGL: StreamingAssets are served by the web server; we cannot File.Exists here.
-    // Prefer CDN if configured for better delivery; otherwise fallback to local path.
-    string cdnWeb = gameData.meta.cdnBase;
-    if (!string.IsNullOrEmpty(cdnWeb))
-        return cdnWeb.EndsWith("/") ? (cdnWeb + videoFileName) : ($"{cdnWeb}/{videoFileName}");
-    return localPath;
-
-#else
-    // iOS/Standalone/etc.: we can typically check the file directly.
-    bool canCheckFile = !(localPath.Contains("://") || localPath.Contains(":///"));
-    if (canCheckFile && System.IO.File.Exists(localPath))
-    {
-        return localPath;
-    }
-
-    // Fallback to CDN if configured
-    string cdn = gameData?.meta?.cdnBase;
-    if (!string.IsNullOrEmpty(cdn))
-    {
-        return cdn.EndsWith("/") ? (cdn + videoFileName) : ($"{cdn}/{videoFileName}");
-    }
-
-    // Last resort: return local path even if we can't verify existence
-    return localPath;
-#endif
+        return null;
 }
 
     void OnVideoStarted()

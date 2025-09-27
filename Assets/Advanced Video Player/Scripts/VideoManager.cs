@@ -111,15 +111,6 @@ public class VideoManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     /// </summary>
     public void FitToParent() {
         return;
-        Vector2 rectParent = new Vector2(rawImage.transform.parent.GetComponent<RectTransform>().rect.width,
-            rawImage.transform.parent.GetComponent<RectTransform>().rect.height);
-        if (rectParent.x / targetRectSize.x < rectParent.y / targetRectSize.y) {
-            rawImage.transform.GetComponent<RectTransform>().sizeDelta = new Vector2(targetRectSize.x * (rectParent.x / targetRectSize.x) + 5,
-                targetRectSize.y * (rectParent.x / targetRectSize.x) + 5);
-        } else {
-            rawImage.transform.GetComponent<RectTransform>().sizeDelta = new Vector2(targetRectSize.x * (rectParent.y / targetRectSize.y) + 5,
-                targetRectSize.y * (rectParent.y / targetRectSize.y) + 5);
-        }
     }
 
     /// <summary>
