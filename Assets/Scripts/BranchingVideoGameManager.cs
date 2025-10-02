@@ -12,6 +12,8 @@ public class BranchingVideoGameManager : MonoSingleton<BranchingVideoGameManager
     
     [Header("Game Configuration")]
     public TextAsset gameDataJson;
+
+    public string cdnBase = "https://636c-cloud1-7gwlsz5m226cfca9-1369289063.tcb.qcloud.la/AIVideoGame";
     public string gameDataUrl; // Alternative: load from URL
     
     [Header("Settings")]
@@ -191,15 +193,22 @@ private void ShowErrorMessage(string message)
         }
     }
     
- public string GetVideoUrl(string videoFileName)
-{
-        gameData.meta.cdnBase = "https://636c-cloud1-7gwlsz5m226cfca9-1369289063.tcb.qcloud.la/AIVideoGame/Videos/";
-        string cdnWeb = gameData.meta.cdnBase;
-        if (!string.IsNullOrEmpty(cdnWeb))
-            return cdnWeb.EndsWith("/") ? (cdnWeb + videoFileName) : ($"{cdnWeb}/{videoFileName}");
-        return null;
-}
-
+    public string GetVideoUrl(string videoFileName)
+    {
+            //gameData.meta.cdnBase = "https://636c-cloud1-7gwlsz5m226cfca9-1369289063.tcb.qcloud.la/AIVideoGame/Videos/";
+            string cdnWeb = $"{cdnBase}/Videos/";
+            if (!string.IsNullOrEmpty(cdnWeb))
+                return cdnWeb.EndsWith("/") ? (cdnWeb + videoFileName) : ($"{cdnWeb}/{videoFileName}");
+            return null;
+    }
+    public string GetThumbnailUrl(string thumbnailFileName)
+    {
+            //gameData.meta.cdnBase = "https://636c-cloud1-7gwlsz5m226cfca9-1369289063.tcb.qcloud.la/AIVideoGame/Videos/";
+            string cdnWeb = $"{cdnBase}/Thumbnails";
+            if (!string.IsNullOrEmpty(cdnWeb))
+                return cdnWeb.EndsWith("/") ? (cdnWeb + thumbnailFileName) : ($"{cdnWeb}/{thumbnailFileName}");
+            return null;
+    }
     void OnVideoStarted()
     {
         Debug.Log("Video started playing");

@@ -3,141 +3,265 @@ using System.Collections;
 using System.IO;
 using UnityEngine;
 using UnityEngine.Networking;
+using BestHTTP;
+using BestHTTP.Caching;
+#if UNITY_WEBGL || WEIXINMINIGAME || PLATFORM_WEIXINMINIGAME
+using WeChatWASM;
+#endif
+
 public static class ThumbnailCache
 {
-        // Cache directory under persistent data path
-        private static string CacheDir => Path.Combine(Application.persistentDataPath, "ThumbnailCache");
+    // Cache directory under persistent data path
+    private static string CacheDir => Path.Combine(Application.persistentDataPath, "ThumbnailCache");
 
-        // Build full path helpers
-        private static string StreamingFilePath(string streamingSubfolder, string fileName)
+    // Build full path helpers
+    private static string StreamingFilePath(string streamingSubfolder, string fileName)
+    {
+        if (string.IsNullOrEmpty(streamingSubfolder))
+            return Path.Combine(Application.streamingAssetsPath, fileName);
+        return Path.Combine(Application.streamingAssetsPath, streamingSubfolder, fileName);
+    }
+
+    private static string CacheFilePath(string fileName)
+    {
+
+
+        string path = WX.env.USER_DATA_PATH;
+        Debug.Log("path" + path);
+        string cachePath = Path.Combine(path, fileName);
+        Debug.Log("cachePath" + cachePath);
+        return cachePath;
+        //return Path.Combine(CacheDir, fileName);
+    }
+
+    public static bool TryLoadLocal(string nodeId, string streamingSubfolder, out Sprite sprite)
+    {
+        sprite = null;
+        // Prefer .png, fallback to .jpg for legacy assets
+        string[] candidates = new[] { nodeId + ".png" };
+        /*
+        // 1) Check StreamingAssets (direct file paths only)
+        foreach (var fn in candidates)
         {
-            if (string.IsNullOrEmpty(streamingSubfolder))
-                return Path.Combine(Application.streamingAssetsPath, fileName);
-            return Path.Combine(Application.streamingAssetsPath, streamingSubfolder, fileName);
-        }
-
-        private static string CacheFilePath(string fileName)
-        {
-            return Path.Combine(CacheDir, fileName);
-        }
-
-        public static bool TryLoadLocal(string nodeId, string streamingSubfolder, out Sprite sprite)
-        {
-            sprite = null;
-            string fileName = nodeId + ".jpg";
-
-            // 1) Check StreamingAssets
-            string streamingPath = StreamingFilePath(streamingSubfolder, fileName);
+            string streamingPath = StreamingFilePath(streamingSubfolder, fn);
             bool streamingIsUri = streamingPath.Contains("://") || streamingPath.Contains(":///");
             if (!streamingIsUri && File.Exists(streamingPath))
             {
                 if (TryLoadSpriteFromFile(streamingPath, out sprite))
                     return true;
             }
-
-            // 2) Check Cache
-            string cachedPath = CacheFilePath(fileName);
+        }
+*/
+        // 2) Check local cache folder
+        foreach (var fn in candidates)
+        {
+            string cachedPath = CacheFilePath(fn);
             if (File.Exists(cachedPath))
             {
                 if (TryLoadSpriteFromFile(cachedPath, out sprite))
+                {
+                    Debug.Log($"TryLoadLocal sprite for '{nodeId}'" + sprite.name + " " + sprite.texture.name + sprite != null);
                     return true;
-            }
-
-            return false;
-        }
-
-        public static IEnumerator LoadOrDownload(string nodeId, string cdnBase, string streamingSubfolder, Action<Sprite> onLoaded)
-        {
-            // Try local first (StreamingAssets -> Cache)
-            if (TryLoadLocal(nodeId, streamingSubfolder, out var localSprite))
-            {
-                onLoaded?.Invoke(localSprite);
-                yield break;
-            }
-
-            // If StreamingAssets path is not a regular file (e.g., Android/WebGL), try to load it via UnityWebRequest
-            string fileName = nodeId + ".png";
-            string streamingPath = StreamingFilePath(streamingSubfolder, fileName);
-            bool streamingIsUri = streamingPath.Contains("://") || streamingPath.Contains(":///");
-            if (streamingIsUri)
-            {
-                using (UnityWebRequest req = UnityWebRequestTexture.GetTexture(streamingPath))
-                {
-                    yield return req.SendWebRequest();
-#if UNITY_2020_2_OR_NEWER
-                    if (req.result == UnityWebRequest.Result.Success)
-#else
-                    if (!(req.isNetworkError || req.isHttpError))
-#endif
-                    {
-                        var tex = DownloadHandlerTexture.GetContent(req);
-                        if (tex != null)
-                        {
-                            var sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
-                            onLoaded?.Invoke(sprite);
-                            yield break;
-                        }
-                    }
                 }
             }
+        }
 
-            // 3) Download from CDN if available
-            if (!string.IsNullOrEmpty(cdnBase))
+        return false;
+    }
+
+    public static IEnumerator LoadOrDownload(string videoFileName, string url, string streamingSubfolder, Action<Sprite> onLoaded)
+    {
+        Debug.Log("videoFileName" + videoFileName);
+        // Try local first (StreamingAssets -> Cache)
+        if (TryLoadLocal(videoFileName, streamingSubfolder, out var localSprite))
+        {
+            Debug.Log($"LoadOrDownload local sprite for '{videoFileName}'" + localSprite.name + " " + localSprite.texture.name);
+            onLoaded?.Invoke(localSprite);
+            yield break;
+        }
+        Debug.Log($"LoadOrDownload download  for '{url}'");
+        /*
+        // If StreamingAssets path is not a regular file (e.g., Android/WebGL), try to load it via UnityWebRequest
+        string fileName = videoFileName + ".png";
+        string streamingPath = StreamingFilePath(streamingSubfolder, fileName);
+        bool streamingIsUri = streamingPath.Contains("://") || streamingPath.Contains(":///");
+        if (streamingIsUri)
+        {
+            using (UnityWebRequest req = UnityWebRequestTexture.GetTexture(streamingPath))
             {
-                string url = cdnBase.EndsWith("/") ? (cdnBase + nodeId + ".png") : ($"{cdnBase}/{nodeId}.png");
-                using (UnityWebRequest req = UnityWebRequestTexture.GetTexture(url))
-                {
-                    yield return req.SendWebRequest();
+                yield return req.SendWebRequest();
 #if UNITY_2020_2_OR_NEWER
-                    if (req.result != UnityWebRequest.Result.Success)
+                if (req.result == UnityWebRequest.Result.Success)
 #else
-                    if (req.isNetworkError || req.isHttpError)
+                if (!(req.isNetworkError || req.isHttpError))
 #endif
+                {
+                    var texFromSA = DownloadHandlerTexture.GetContent(req);
+                    if (texFromSA != null)
                     {
-                        Debug.LogWarning($"Thumbnail download failed for '{nodeId}': {req.error}");
-                        yield break;
-                    }
-
-                    var tex = DownloadHandlerTexture.GetContent(req);
-                    if (tex != null)
-                    {
-                        // Save to cache
-                        try
-                        {
-                            Directory.CreateDirectory(CacheDir);
-                            byte[] png = tex.EncodeToPNG();
-                            File.WriteAllBytes(CacheFilePath(nodeId + ".png"), png);
-                        }
-                        catch (Exception e)
-                        {
-                            Debug.LogWarning($"Failed to write thumbnail cache for '{nodeId}': {e.Message}");
-                        }
-
-                        var sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
-                        onLoaded?.Invoke(sprite);
+                        var sp = Sprite.Create(texFromSA, new Rect(0, 0, texFromSA.width, texFromSA.height), new Vector2(0.5f, 0.5f));
+                        onLoaded?.Invoke(sp);
                         yield break;
                     }
                 }
             }
         }
+        */
+        Debug.Log($"Thumbnail download  for '{url}'");
 
-        private static bool TryLoadSpriteFromFile(string path, out Sprite sprite)
+#if UNITY_WEBGL || WEIXINMINIGAME && !UNITY_EDITOR
+        // WeChat Mini Game/WebGL path: explicitly use wx.downloadFile via WeChatWASM.WX.DownloadFile
+        if (!string.IsNullOrEmpty(url))
         {
-            sprite = null;
+            bool wxDone = false;
+            bool wxSuccess = false;
+            string wxLocalPath = null;
             try
             {
-                byte[] bytes = File.ReadAllBytes(path);
-                var tex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
-                if (tex.LoadImage(bytes))
+                var option = new DownloadFileOption()
                 {
-                    sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
-                    return true;
-                }
+                    url = url,
+                    filePath = CacheFilePath(videoFileName + ".png"),
+                    success = (res) =>
+                    {
+                        Debug.Log($"WX.DownloadFile success for '{url}'" + res.filePath + " local:" + res.tempFilePath);
+                        // prefer filePath if provided, otherwise tempFilePath
+                        wxLocalPath = res.filePath;
+                        Debug.Log("1File downloaded to: "+  WX.GetFileSystemManager().AccessSync(wxLocalPath));
+                        Debug.Log("2File downloaded to: "+ File.Exists(res.filePath));
+                        wxSuccess = !string.IsNullOrEmpty(wxLocalPath) && res.statusCode == 200;
+                        wxDone = true;
+                    },
+                    fail = (err) =>
+                    {
+                        Debug.LogWarning($"WX.DownloadFile fail for '{url}': {err.errMsg}");
+                        wxDone = true;
+                        wxSuccess = false;
+                    }
+                };
+
+                // Start download task
+                var task = WX.DownloadFile(option);
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"Failed to load sprite from '{path}': {e.Message}");
+                Debug.LogWarning($"WX.DownloadFile exception for '{url}': {e.Message}");
             }
-            return false;
+
+            // wait for download to complete
+            while (!wxDone)
+                yield return null;
+
+            if (wxSuccess && !string.IsNullOrEmpty(wxLocalPath))
+            {
+                Debug.Log($"string.IsNullOrEmpty(wxLocalPath) WX success for '{url}'" + wxLocalPath);
+
+                //WX.GetFileSystemManager().AccessSync(wxLocalPath);
+                //WX.GetFileSystemManager().ReadFileSync(wxLocalPath);
+
+                //if (WX.GetFileSystemManager().AccessSync(wxLocalPath))
+                {
+                    byte[] fileData = WX.GetFileSystemManager().ReadFileSync(wxLocalPath);
+                    
+                    Texture2D texture = new Texture2D(2, 2); // 尺寸会被加载的图片覆盖
+                    if (texture.LoadImage(fileData)) // 自动解析图片数据（如JPG, PNG）
+                    {
+                        var spriteWx = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+                        onLoaded?.Invoke(spriteWx);
+                        Debug.Log("图片加载成功！");
+                    }
+                    else
+                    {
+                        Debug.LogError("加载图片数据失败。");
+                    }
+                }
+            }
         }
+#else
+   // 3) Fallback: Download from CDN if available (via BestHTTP with HTTPCache)
+            if (!string.IsNullOrEmpty(url))
+            {
+                //string url = cdnBase.EndsWith("/") ? (cdnBase + nodeId + ".png") : ($"{cdnBase}/{nodeId}.png");
+                bool done = false;
+                Texture2D downloaded = null;
+
+                // BestHTTP will use its own HTTPCache if supported. No special flags needed for GET.
+                var request = new HTTPRequest(new Uri(url), (req, resp) =>
+                {
+                    try
+                    {
+                        Debug.Log("resp " + resp.IsSuccess);
+                        if (resp != null && resp.IsSuccess && resp.Data != null && resp.Data.Length > 0)
+                        {
+                            var t = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+                            if (t.LoadImage(resp.Data))
+                                downloaded = t;
+                            else
+                                Debug.LogError($"BestHTTP image decode failed for '{videoFileName}'.");
+                        }
+                        else
+                        {
+                            string err = req.Exception != null ? req.Exception.Message : (resp != null ? $"HTTP {resp.StatusCode}" : "No response");
+                            Debug.LogError($"Thumbnail download failed for '{videoFileName}': {err}");
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogError($"Exception while processing thumbnail for '{videoFileName}': {e.Message}");
+                    }
+                    finally { done = true; }
+                });
+
+                request.DisableCache = false; // allow HTTPCache
+                request.MethodType = HTTPMethods.Get;
+                request.Send();
+
+                while (!done)
+                    yield return null;
+
+                if (downloaded != null)
+                {
+                    // Save to our simple disk cache as PNG
+                    try
+                    {
+                        Directory.CreateDirectory(CacheDir);
+                        byte[] png = downloaded.EncodeToPNG();
+                        File.WriteAllBytes(CacheFilePath(videoFileName + ".png"), png);
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogWarning($"Failed to write thumbnail cache for '{videoFileName}': {e.Message}");
+                    }
+
+                    var sprite = Sprite.Create(downloaded, new Rect(0, 0, downloaded.width, downloaded.height), new Vector2(0.5f, 0.5f));
+                    onLoaded?.Invoke(sprite);
+                    yield break;
+                }
+            }
+#endif
+
+
+     }
+
+    private static bool TryLoadSpriteFromFile(string path, out Sprite sprite)
+    {
+        sprite = null;
+        Debug.Log($"TryLoadSpriteFromFile: {path}");
+        try
+        {
+            byte[] bytes = File.ReadAllBytes(path);
+            var tex = new Texture2D(256, 256, TextureFormat.ASTC_6x6, false);
+            if (tex.LoadImage(bytes))
+            {
+                sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+                Debug.Log($"TryLoadSpriteFromFile sprite: {sprite} sprite != null: {sprite != null}");
+                return true;
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning($"Failed to load sprite from '{path}': {e.Message}");
+        }
+        return false;
+    }
 }

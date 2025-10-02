@@ -181,26 +181,31 @@ public class StoryTreeView : MonoBehaviour
                 nodeUI.name = $"Node_{id}";
 
                 // Set info: title and thumbnail
+                Sprite sprite = null;
                 string title = !string.IsNullOrEmpty(n.question) ? n.question : n.id;
-                var sprite = LoadThumbnailForNode(n, data?.meta?.cdnBase);
-                if (sprite == null)
+                //var sprite = LoadThumbnailForNode(n, data?.meta?.cdnBase);
+                //if (sprite == null)
                 {
                     // Ensure thumbnail is loaded or downloaded and cached, then applied when ready
+                    string URL = BranchingVideoGameManager.Instance.GetThumbnailUrl($"{n.video.Replace(".mp4", ".png")}");
+                    Debug.Log($"Thumbnail URL: {URL}");
                     StartCoroutine(ThumbnailCache.LoadOrDownload(
-                    n.id,
-                    data?.meta?.cdnBase,
+                    n.video.Split('.').First(),
+                    URL,
                     streamingThumbnailsFolder,
                     loaded =>
                     {
+                        Debug.Log($"Thumbnail loaded for" + loaded != null);
                         if (nodeUI != null && nodeUI.thumbnailImage != null && loaded != null)
                         {
+                            Debug.Log($"Thumbnail loaded for" + loaded != null);
                             nodeUI.thumbnailImage.sprite = loaded;
                         }
                     }));
 
                 }
 
-                nodeUI.SetInfo(n.id, title, sprite != null ? sprite : defaultThumbnail);
+                nodeUI.SetInfo(n.id, title);
                 // Provide video info so the button can play the corresponding video
                 nodeUI.SetVideo(n.video, data?.meta?.cdnBase);
 
@@ -331,8 +336,8 @@ public class StoryTreeView : MonoBehaviour
         Debug.Log(baseName);
         if (!string.IsNullOrEmpty(baseName))
         {
-            int dot = baseName.LastIndexOf('.')
-; if (dot >= 0) baseName = baseName.Substring(0, dot);
+            int dot = baseName.LastIndexOf('.');
+            if (dot >= 0) baseName = baseName.Substring(0, dot);
             string pathByVideo = string.IsNullOrEmpty(thumbnailsResourcesFolder) ? baseName : ($"{thumbnailsResourcesFolder}/{baseName}");
             sprite = Resources.Load<Sprite>(pathByVideo);
             if (sprite != null) return sprite;

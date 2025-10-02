@@ -26,16 +26,16 @@ public class NodeUI : MonoBehaviour
         }
     }
 
-    /// <summary>
+    /// <summary>x
     /// Set the visual info for this node.
     /// </summary>
-    public void SetInfo(string id, string title, Sprite thumbnail)
+    public void SetInfo(string id, string title)
     {
         nodeId = id;
         if (titleText != null)
             titleText.text = title ?? id;
-        if (thumbnailImage != null)
-            thumbnailImage.sprite = thumbnail;
+       // if (thumbnailImage != null)
+       //     thumbnailImage.sprite = thumbnail;
     }
 
     /// <summary>
