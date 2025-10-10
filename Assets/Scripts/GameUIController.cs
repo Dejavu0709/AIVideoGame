@@ -31,7 +31,7 @@ public class GameUIController : MonoSingleton<GameUIController>
     public Button playButton;
     private List<Button> currentChoiceButtons = new List<Button>();
     private System.Action<string> onChoiceSelected;
-    private System.Action<bool> onQTECompleted;
+    private System.Action<int> onQTECompleted;
     private CanvasGroup choicePanelCanvasGroup;
     private CanvasGroup qtePanelCanvasGroup;
 
@@ -95,7 +95,7 @@ public class GameUIController : MonoSingleton<GameUIController>
         }
     }
 
-    public void ShowQTE(QTEData qteData, System.Action<bool> onComplete)
+    public void ShowQTE(QTEData qteData, System.Action<int> onComplete)
     {
         if (qtePanel == null)
         {
@@ -111,15 +111,12 @@ public class GameUIController : MonoSingleton<GameUIController>
             case "button":
                 StartCoroutine(ButtonQTE(qteData));
                 break;
-            case "sequence":
-                StartCoroutine(SequenceQTE(qteData));
-                break;
             case "timing":
                 StartCoroutine(TimingQTE(qteData));
                 break;
             default:
                 Debug.LogWarning($"Unknown QTE type: {qteData.type}");
-                onQTECompleted?.Invoke(false);
+                onQTECompleted?.Invoke(0);
                 break;
         }
     }
@@ -202,61 +199,9 @@ public class GameUIController : MonoSingleton<GameUIController>
         }
 
         HideQTE();
-        onQTECompleted?.Invoke(success);
+        onQTECompleted?.Invoke(1);
     }
 
-    private IEnumerator SequenceQTE(QTEData qteData)
-    {
-        StartCoroutine(FadeInPanel(qtePanelCanvasGroup, qtePanel));
-
-        if (qteData.sequence == null || qteData.sequence.Count == 0)
-        {
-            onQTECompleted?.Invoke(false);
-            yield break;
-        }
-
-        int currentIndex = 0;
-        float timePerKey = qteData.duration / qteData.sequence.Count;
-        bool success = true;
-
-        while (currentIndex < qteData.sequence.Count && success)
-        {
-            string expectedKey = qteData.sequence[currentIndex];
-
-            if (qteInstructionText != null)
-                qteInstructionText.text = $"Press: {expectedKey}";
-
-            if (qteKeyText != null)
-                qteKeyText.text = expectedKey;
-
-            float keyTimeRemaining = timePerKey;
-            bool keyPressed = false;
-
-            while (keyTimeRemaining > 0 && !keyPressed)
-            {
-                if (qteProgressBar != null)
-                    qteProgressBar.value = 1f - (keyTimeRemaining / timePerKey);
-
-                if (Input.inputString.ToUpper().Contains(expectedKey.ToUpper()))
-                {
-                    keyPressed = true;
-                    currentIndex++;
-                    break;
-                }
-
-                keyTimeRemaining -= Time.deltaTime;
-                yield return null;
-            }
-
-            if (!keyPressed)
-            {
-                success = false;
-            }
-        }
-
-        HideQTE();
-        onQTECompleted?.Invoke(success);
-    }
 
     private IEnumerator TimingQTE(QTEData qteData)
     {
@@ -290,7 +235,7 @@ public class GameUIController : MonoSingleton<GameUIController>
                       inputTime <= qteData.duration * 0.7f;
 
         HideQTE();
-        onQTECompleted?.Invoke(success);
+        onQTECompleted?.Invoke(1);
     }
 
     private IEnumerator FadeInPanel(CanvasGroup canvasGroup, GameObject panel)

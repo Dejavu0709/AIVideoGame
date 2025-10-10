@@ -105,10 +105,20 @@ public class StoryTreeView : MonoBehaviour
                     }
                 }
             }
-            if (node.qte != null)
+            if (node.qte != null && node.qte.NextNodeMap != null)
             {
-                if (!string.IsNullOrEmpty(node.qte.successNext) && node.qte.successNext != node.id) children[node.id].Add(node.qte.successNext);
-                if (!string.IsNullOrEmpty(node.qte.failNext) && node.qte.failNext != node.id) children[node.id].Add(node.qte.failNext);
+                foreach (var kv in node.qte.NextNodeMap)
+                {
+                    if (!string.IsNullOrEmpty(kv.Value) && kv.Value != node.id)
+                    {
+                        children[node.id].Add(kv.Value);
+                        Debug.Log(node.id + ":" + kv.Value);
+                    }
+                }
+
+
+                //if (!string.IsNullOrEmpty(node.qte.successNext) && node.qte.successNext != node.id) children[node.id].Add(node.qte.successNext);
+                //if (!string.IsNullOrEmpty(node.qte.failNext) && node.qte.failNext != node.id) children[node.id].Add(node.qte.failNext);
             }
         }
 

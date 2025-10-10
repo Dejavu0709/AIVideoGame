@@ -24,7 +24,9 @@ public static class ThumbnailCache
 
     private static string CacheFilePath(string fileName)
     {
-
+        #if UNITY_EDITOR
+        return null;
+        #endif
 
         string path = WX.env.USER_DATA_PATH;
         Debug.Log("path" + path);
@@ -163,16 +165,16 @@ public static class ThumbnailCache
                 {
                     byte[] fileData = WX.GetFileSystemManager().ReadFileSync(wxLocalPath);
                     
-                    Texture2D texture = new Texture2D(2, 2); // ³ß´ç»á±»¼ÓÔØµÄÍ¼Æ¬¸²¸Ç
-                    if (texture.LoadImage(fileData)) // ×Ô¶¯½âÎöÍ¼Æ¬Êý¾Ý£¨ÈçJPG, PNG£©
+                    Texture2D texture = new Texture2D(2, 2); // ï¿½ß´ï¿½á±»ï¿½ï¿½ï¿½Øµï¿½Í¼Æ¬ï¿½ï¿½ï¿½ï¿½
+                    if (texture.LoadImage(fileData)) // ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½Í¼Æ¬ï¿½ï¿½ï¿½Ý£ï¿½ï¿½ï¿½JPG, PNGï¿½ï¿½
                     {
                         var spriteWx = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
                         onLoaded?.Invoke(spriteWx);
-                        Debug.Log("Í¼Æ¬¼ÓÔØ³É¹¦£¡");
+                        Debug.Log("Í¼Æ¬ï¿½ï¿½ï¿½Ø³É¹ï¿½ï¿½ï¿½");
                     }
                     else
                     {
-                        Debug.LogError("¼ÓÔØÍ¼Æ¬Êý¾ÝÊ§°Ü¡£");
+                        Debug.LogError("ï¿½ï¿½ï¿½ï¿½Í¼Æ¬ï¿½ï¿½ï¿½ï¿½Ê§ï¿½Ü¡ï¿½");
                     }
                 }
             }

@@ -1,9 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Linq;
 using UnityEngine.Networking;
 using NexgenDragon;
+using Newtonsoft.Json;
 public class BranchingVideoGameManager : MonoSingleton<BranchingVideoGameManager>
 {
     [Header("Components")]
@@ -92,8 +92,9 @@ private IEnumerator LoadGameDataFromUrl()
             try
             {
                 Debug.Log($"get game data from URL: {request.downloadHandler.text}");
-                // Parse the JSON data
-                gameData = JsonUtility.FromJson<GameData>(request.downloadHandler.text);
+                    // Parse the JSON data
+                gameData = JsonConvert.DeserializeObject<GameData>(request.downloadHandler.text);
+                 //   gameData = JsonUtility.FromJson<GameData>(request.downloadHandler.text);
                 Debug.Log($"Successfully loaded game data from URL: {gameData.meta.title}");
                         // Create node lookup dictionary for fast access
                 CreateNodeLookup();
@@ -285,13 +286,13 @@ private void ShowErrorMessage(string message)
         }
     }
     
-    void OnQTECompleted(bool success)
+    void OnQTECompleted(int score)
     {
-        Debug.Log($"QTE completed: {(success ? "Success" : "Failed")}");
+        Debug.Log($"QTE completed: {score}");
         
         if (currentNode?.qte != null)
         {
-            string nextNodeId = success ? currentNode.qte.successNext : currentNode.qte.failNext;
+            string nextNodeId = currentNode.qte.NextNodeMap[score];
             
             if (!string.IsNullOrEmpty(nextNodeId))
             {

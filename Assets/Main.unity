@@ -33313,7 +33313,7 @@ MonoBehaviour:
   uiController: {fileID: 0}
   gameDataJson: {fileID: 0}
   cdnBase: https://636c-cloud1-7gwlsz5m226cfca9-1369289063.tcb.qcloud.la/AIVideoGame
-  gameDataUrl: https://636c-cloud1-7gwlsz5m226cfca9-1369289063.tcb.qcloud.la/game.json?sign=346034557e8d7787a5b7b3d1c9a4ffb9&t=1758034866
+  gameDataUrl: https://636c-cloud1-7gwlsz5m226cfca9-1369289063.tcb.qcloud.la/AIVideoGame/game.json?sign=346034557e8d7787a5b7b3d1c9a4ffb9&t=1758034866
   delayBeforeShowingChoices: 1
 --- !u!4 &1842021652
 Transform:

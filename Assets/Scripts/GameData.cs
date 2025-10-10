@@ -39,7 +39,10 @@ public class QTEData
 {
     public string type; // "button", "sequence", "timing"
     public float duration;
-    public List<string> sequence; // For sequence QTEs
-    public string successNext;
-    public string failNext;
+    public Dictionary<int, string> NextNodeMap;
+    public float startDelayFromStartSeconds;
+    public string param1;
+    public string param2;
+    public string param3;
+
 }
