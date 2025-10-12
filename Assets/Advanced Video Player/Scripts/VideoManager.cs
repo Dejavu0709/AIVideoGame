@@ -201,7 +201,7 @@ public class VideoManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         if (!isStarted) {
             isStarted = true;
             videoPlayer.SetDirectAudioMute(0, false);
-            MessageDispatcher.SendMessage("OnVideoStart");
+            MessageDispatcher.SendMessage("VideoStarted");
             //videoPlayer.Pause();
             videoPlayer.Play();
             timeText.text = GetStringFromSeconds(0) + " / " + GetStringFromSeconds((int)videoPlayer.length);

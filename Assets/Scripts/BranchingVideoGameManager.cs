@@ -24,6 +24,11 @@ public class BranchingVideoGameManager : MonoSingleton<BranchingVideoGameManager
     private GameNode currentNode;
     private Dictionary<string, GameNode> nodeLookup;
     private bool isGameActive = false;
+    // QTE control
+    private Coroutine qteDelayRoutine;
+    private bool qteShownForCurrentNode = false;
+    private bool qtePendingForCurrentNode = false;
+    private float qtePendingDelaySeconds = 0f;
 
     public static GameData GameData { get => gameData; set => gameData = value; }
 
@@ -175,6 +180,15 @@ private void ShowErrorMessage(string message)
         }
         
         currentNode = nodeLookup[nodeId];
+        // reset QTE state for the new node
+        if (qteDelayRoutine != null)
+        {
+            StopCoroutine(qteDelayRoutine);
+            qteDelayRoutine = null;
+        }
+        qteShownForCurrentNode = false;
+        qtePendingForCurrentNode = false;
+        qtePendingDelaySeconds = 0f;
         Debug.Log($"Playing node: {nodeId} - {currentNode.question}");
         
         // Hide UI while video plays
@@ -186,6 +200,12 @@ private void ShowErrorMessage(string message)
         {
             string videoUrl = GetVideoUrl(currentNode.video);
             videoController.PlayVideo(videoUrl);
+            // Defer QTE countdown until the video is confirmed started (OnVideoStarted)
+            if (currentNode.qte != null)
+            {
+                qtePendingForCurrentNode = true;
+                qtePendingDelaySeconds = Mathf.Max(0f, currentNode.qte.startDelayFromStartSeconds);
+            }
         }
         else
         {
@@ -219,6 +239,29 @@ private void ShowErrorMessage(string message)
             //uiController.functionPanel.SetActive(true);
             uiController.ShowAllCanvasGroup();
         }
+
+        // Start QTE countdown only after video successfully starts
+        if (isGameActive && currentNode != null && qtePendingForCurrentNode && !qteShownForCurrentNode)
+        {
+            // Stop any stray coroutine
+            if (qteDelayRoutine != null)
+            {
+                StopCoroutine(qteDelayRoutine);
+                qteDelayRoutine = null;
+            }
+
+            if (qtePendingDelaySeconds > 0f)
+            {
+                Debug.Log($"Starting QTE countdown in {qtePendingDelaySeconds} seconds");
+                qteDelayRoutine = StartCoroutine(ShowQTEAtDelay(qtePendingDelaySeconds));
+            }
+            else
+            {
+                // Show immediately on video start when delay is 0
+                qteShownForCurrentNode = true;
+                ShowQTE();
+            }
+        }
     }
     
     void OnVideoFinished()
@@ -240,7 +283,7 @@ private void ShowErrorMessage(string message)
             // Show choices
             ShowChoices();
         }
-        else if (currentNode.qte != null)
+        else if (currentNode.qte != null && !qteShownForCurrentNode)
         {
             // Show QTE
             ShowQTE();
@@ -251,6 +294,20 @@ private void ShowErrorMessage(string message)
             Debug.Log("No choices or QTE available. Game might be finished.");
             OnGameFinished();
         }
+    }
+
+    // Trigger QTE after a delay while video is playing
+    private IEnumerator ShowQTEAtDelay(float delay)
+    {
+        if (delay > 0f)
+            yield return new WaitForSeconds(delay);
+        // Ensure still valid state and same node
+        if (!isGameActive || currentNode == null || currentNode.qte == null || qteShownForCurrentNode)
+            yield break;
+        // Pause video at QTE start
+        // (User preference) Don't pause video automatically here
+        qteShownForCurrentNode = true;
+        ShowQTE();
     }
     
     void ShowChoices()
@@ -264,8 +321,10 @@ private void ShowErrorMessage(string message)
     
     void ShowQTE()
     {
+        Debug.Log("Showing QTE:" + currentNode.question + currentNode.qte);
         if (uiController != null && currentNode.qte != null)
         {
+            Debug.Log("Start Showing QTE:" + currentNode.question + currentNode.qte);
             uiController.ShowQTE(currentNode.qte, OnQTECompleted);
         }
     }
@@ -292,7 +351,30 @@ private void ShowErrorMessage(string message)
         
         if (currentNode?.qte != null)
         {
-            string nextNodeId = currentNode.qte.NextNodeMap[score];
+            string nextNodeId = null;
+            var map = currentNode.qte.NextNodeMap;
+            if (map != null && map.Count > 0)
+            {
+                // Default to the smallest key
+                int smallestKey = int.MaxValue;
+                string smallestValue = null;
+                foreach (var kv in map)
+                {
+                    if (kv.Key < smallestKey) { smallestKey = kv.Key; smallestValue = kv.Value; }
+                }
+                nextNodeId = smallestValue;
+
+                // Choose the largest key <= score
+                int chosenKey = int.MinValue; string chosenValue = null;
+                foreach (var kv in map)
+                {
+                    if (kv.Key <= score && kv.Key > chosenKey)
+                    {
+                        chosenKey = kv.Key; chosenValue = kv.Value;
+                    }
+                }
+                if (!string.IsNullOrEmpty(chosenValue)) nextNodeId = chosenValue;
+            }
             
             if (!string.IsNullOrEmpty(nextNodeId))
             {
@@ -325,7 +407,7 @@ private void ShowErrorMessage(string message)
         // Create a simple restart choice
         List<Choice> restartChoices = new List<Choice>
         {
-            new Choice { label = "重新开始游�?", next = gameData.meta.startNodeId }
+            new Choice { label = "重新开始游�?", next = gameData.meta.startNodeId }
         };
         
         if (uiController != null)
