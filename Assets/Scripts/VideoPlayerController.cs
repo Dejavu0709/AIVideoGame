@@ -70,6 +70,7 @@ public class VideoPlayerController : MonoSingleton<VideoPlayerController>
     
     public void PauseVideo()
     {
+        Debug.Log("PauseVideo");
         if (isVideoPlaying)
         {
             videoManager.Pause();

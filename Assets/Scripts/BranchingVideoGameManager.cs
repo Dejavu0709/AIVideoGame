@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using NexgenDragon;
 using Newtonsoft.Json;
+
 public class BranchingVideoGameManager : MonoSingleton<BranchingVideoGameManager>
 {
     [Header("Components")]
@@ -233,7 +234,6 @@ private void ShowErrorMessage(string message)
     void OnVideoStarted()
     {
         Debug.Log("Video started playing");
-
         if (uiController != null)
         {
             //uiController.functionPanel.SetActive(true);
@@ -255,11 +255,11 @@ private void ShowErrorMessage(string message)
                 Debug.Log($"Starting QTE countdown in {qtePendingDelaySeconds} seconds");
                 qteDelayRoutine = StartCoroutine(ShowQTEAtDelay(qtePendingDelaySeconds));
             }
-            else
+            //else
             {
                 // Show immediately on video start when delay is 0
-                qteShownForCurrentNode = true;
-                ShowQTE();
+                //qteShownForCurrentNode = true;
+                //ShowQTE();
             }
         }
     }
@@ -270,7 +270,11 @@ private void ShowErrorMessage(string message)
         
         if (currentNode == null)
             return;
-        
+        if(currentNode.qte.startDelayFromStartSeconds > 0)//播放过程中已经完成qte结果
+        {
+            DecideNextNodeByQTE();
+            return;
+        }
         StartCoroutine(ShowInteractionAfterDelay());
     }
     
@@ -328,7 +332,7 @@ private void ShowErrorMessage(string message)
             uiController.ShowQTE(currentNode.qte, OnQTECompleted);
         }
     }
-    
+
     void OnChoiceSelected(string nextNodeId)
     {
         Debug.Log($"Choice selected: {nextNodeId}");
@@ -344,11 +348,28 @@ private void ShowErrorMessage(string message)
             OnGameFinished();
         }
     }
-    
-    void OnQTECompleted(int score)
+    private int _curScore = 0;
+    public void OnQTECompleted(int score)
     {
         Debug.Log($"QTE completed: {score}");
-        
+        _curScore += score;
+        Debug.Log($"currentNode.qte.startDelayFromStartSeconds: {currentNode.qte.startDelayFromStartSeconds}");
+        if(currentNode.qte.startDelayFromStartSeconds > 0)
+        {
+            return;
+        }
+        else
+        {
+            DecideNextNodeByQTE();
+        }
+
+
+     
+    }
+
+    private void DecideNextNodeByQTE()
+    {
+        Debug.Log("DecideNextNodeByQTE");
         if (currentNode?.qte != null)
         {
             string nextNodeId = null;
@@ -360,6 +381,7 @@ private void ShowErrorMessage(string message)
                 string smallestValue = null;
                 foreach (var kv in map)
                 {
+                    Debug.Log($"Key: {kv.Key}, Value: {kv.Value}");
                     if (kv.Key < smallestKey) { smallestKey = kv.Key; smallestValue = kv.Value; }
                 }
                 nextNodeId = smallestValue;
@@ -368,7 +390,7 @@ private void ShowErrorMessage(string message)
                 int chosenKey = int.MinValue; string chosenValue = null;
                 foreach (var kv in map)
                 {
-                    if (kv.Key <= score && kv.Key > chosenKey)
+                    if (kv.Key <= _curScore && kv.Key > chosenKey)
                     {
                         chosenKey = kv.Key; chosenValue = kv.Value;
                     }
@@ -419,6 +441,7 @@ private void ShowErrorMessage(string message)
     // Public methods for external control
     public void PauseGame()
     {
+        Debug.Log("pause");
         if (videoController != null)
             videoController.PauseVideo();
     }

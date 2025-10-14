@@ -5,7 +5,7 @@ using TMPro;
 using System.Collections;
 using NexgenDragon;
 using Michsky.UI.Dark;
-
+using QTESystem;
 public class GameUIController : MonoSingleton<GameUIController>
 {
     [Header("UI Elements")]
@@ -16,9 +16,8 @@ public class GameUIController : MonoSingleton<GameUIController>
 
     [Header("QTE UI")]
     public GameObject qtePanel;
-    public TextMeshProUGUI qteInstructionText;
-    public Slider qteProgressBar;
-    public TextMeshProUGUI qteKeyText;
+    //public ClickQTE clickQTE;
+    public MashingQTE mashingQTE;
 
     [Header("Animation")]
     public float fadeInDuration = 0.5f;
@@ -108,14 +107,21 @@ public class GameUIController : MonoSingleton<GameUIController>
         // Setup QTE UI based on type
         switch (qteData.type.ToLower())
         {
-            case "button":
-                StartCoroutine(ButtonQTE(qteData));
-                break;
-            case "timing":
-                StartCoroutine(TimingQTE(qteData));
-                break;
+            //case "button":
+                //StartCoroutine(ButtonQTE(qteData));
+                //break;
+            //case "timing":
+            //    StartCoroutine(TimingQTE(qteData));
+            //    break;
             case "clicks":
-                StartCoroutine(ClicksQTE(qteData));
+            qtePanel.gameObject.SetActive(true);
+            mashingQTE.gameObject.SetActive(true);
+            mashingQTE.timesToHit = int.Parse(qteData.param1);
+            mashingQTE.time = qteData.duration;
+            mashingQTE.timesToHit = 20;
+            mashingQTE.time = 5;
+            mashingQTE.BeginQTE();
+            //clickQTE.ShowQTE(qteData, onQTECompleted);
                 break;
             default:
                 Debug.LogWarning($"Unknown QTE type: {qteData.type}");
@@ -173,7 +179,7 @@ public class GameUIController : MonoSingleton<GameUIController>
         HideChoices();
         onChoiceSelected?.Invoke(nextNodeId);
     }
-
+/*
     private IEnumerator ButtonQTE(QTEData qteData)
     {
         StartCoroutine(FadeInPanel(qtePanelCanvasGroup, qtePanel));
@@ -204,85 +210,8 @@ public class GameUIController : MonoSingleton<GameUIController>
         HideQTE();
         onQTECompleted?.Invoke(1);
     }
-
-    // New QTE: Count clicks within duration (after optional start delay)
-    private IEnumerator ClicksQTE(QTEData qteData)
-    {
-        // Parse optional target clicks from param1 for UI hint only
-        int targetClicks = 0;
-        int.TryParse(qteData.param1, out targetClicks);
-        float duration = Mathf.Max(0f, qteData.duration);
-        float delay = Mathf.Max(0f, qteData.startDelayFromStartSeconds);
-        Debug.Log($"QTE: {qteData.type}, Target clicks: {targetClicks}, Duration: {duration}, Delay: {delay}");
-        if (qteInstructionText != null)
-        {
-            if (targetClicks > 0)
-                qteInstructionText.text = $"在{duration:0.#}秒内点击{targetClicks}次";
-            else
-                qteInstructionText.text = $"在{duration:0.#}秒内尽可能多点击";
-        }
-
-        // Optional delay before QTE becomes active (show panel after delay)
-        float wait = delay;
-        while (wait > 0f)
-        {
-            // You may show a pre-countdown here if desired
-            wait -= Time.deltaTime;
-            yield return null;
-        }
-
-        // Now show the panel right when the QTE starts
-        StartCoroutine(FadeInPanel(qtePanelCanvasGroup, qtePanel));
-
-        float timeRemaining = duration;
-        int clicks = 0;
-
-        while (timeRemaining > 0f)
-        {
-            // Update progress bar
-            if (qteProgressBar != null && duration > 0f)
-            {
-                qteProgressBar.value = 1f - (timeRemaining / duration);
-            }
-
-            // Count clicks: mouse/touch/space
-            bool clicked = false;
-            if (Input.GetMouseButtonDown(0)) clicked = true;
-#if UNITY_EDITOR || UNITY_STANDALONE
-            if (Input.GetKeyDown(KeyCode.Space)) clicked = true;
-#endif
-            if (Input.touchCount > 0)
-            {
-                for (int i = 0; i < Input.touchCount; i++)
-                {
-                    if (Input.GetTouch(i).phase == TouchPhase.Began)
-                    {
-                        clicked = true;
-                        break;
-                    }
-                }
-            }
-            if (clicked)
-            {
-                clicks++;
-                if (qteKeyText != null)
-                {
-                    if (targetClicks > 0)
-                        qteKeyText.text = $"{clicks}/{targetClicks}";
-                    else
-                        qteKeyText.text = clicks.ToString();
-                }
-            }
-
-            timeRemaining -= Time.deltaTime;
-            yield return null;
-        }
-
-        HideQTE();
-        // Return total clicks; Branching manager can map this via NextNodeMap
-        onQTECompleted?.Invoke(clicks);
-    }
-
+*/
+/*
 
     private IEnumerator TimingQTE(QTEData qteData)
     {
@@ -318,7 +247,7 @@ public class GameUIController : MonoSingleton<GameUIController>
         HideQTE();
         onQTECompleted?.Invoke(1);
     }
-
+*/
     private IEnumerator FadeInPanel(CanvasGroup canvasGroup, GameObject panel)
     {
         if (panel != null)

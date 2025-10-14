@@ -394,9 +394,9 @@ public class SceneSetupHelper : MonoBehaviour
             uiController.choiceButtonPrefab = choiceButtonPrefab;
             
             uiController.qtePanel = uiCanvas.transform.Find("QTEPanel")?.gameObject;
-            uiController.qteInstructionText = uiController.qtePanel?.transform.Find("QTEInstructionText")?.GetComponent<TextMeshProUGUI>();
-            uiController.qteProgressBar = uiController.qtePanel?.transform.Find("QTEProgressBar")?.GetComponent<Slider>();
-            uiController.qteKeyText = uiController.qtePanel?.transform.Find("QTEKeyText")?.GetComponent<TextMeshProUGUI>();
+            //uiController.qteInstructionText = uiController.qtePanel?.transform.Find("QTEInstructionText")?.GetComponent<TextMeshProUGUI>();
+            //uiController.qteProgressBar = uiController.qtePanel?.transform.Find("QTEProgressBar")?.GetComponent<Slider>();
+            //uiController.qteKeyText = uiController.qtePanel?.transform.Find("QTEKeyText")?.GetComponent<TextMeshProUGUI>();
         }
         
         // Connect MediaPlayer to DisplayUGUI

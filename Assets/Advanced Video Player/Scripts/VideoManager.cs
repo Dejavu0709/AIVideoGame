@@ -43,7 +43,7 @@ public class VideoManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     public bool isOpenedDarkWindow; // Is interface open
 
-    float targetSpeed; // Target playback speed
+    float targetSpeed = 1; // Target playback speed
 
     public ChangeTime addTimeScript; // Add time script
     public ChangeTime minusTimeScript; // Minus time script
@@ -243,6 +243,7 @@ public class VideoManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     /// Pause video
     /// </summary>
     public void Pause() {
+        Debug.Log("pause！！！！！！！！！！");
         if (isOpenedDarkWindow) {
             targetAnimator.SetTrigger("StartHoldingOpenAgain");
         } else {
@@ -273,6 +274,7 @@ public class VideoManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     /// Pause video when you touch a time slider
     /// </summary>
     public void PauseForSlider() {
+                Debug.Log("pause！！！！！！！！！！");
         videoPlayer.Pause();
         isPlaying = false;
     }
@@ -298,6 +300,7 @@ public class VideoManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     /// Update method
     /// </summary>
     private void Update() {
+        return;
         if (Input.GetKeyDown(KeyCode.UpArrow)) {
             ChangeVolumeOffset(1);
         }

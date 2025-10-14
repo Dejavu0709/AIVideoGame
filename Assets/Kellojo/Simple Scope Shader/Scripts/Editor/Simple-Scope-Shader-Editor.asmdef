@@ -1,0 +1,19 @@
+{
+    "name": "Simple-Scope-Shader-Editor",
+    "rootNamespace": "Kellojo.ScopeShader.Editor",
+    "references": [
+        "GUID:3eae0364be2026648bf74846acb8a731",
+        "GUID:36c1f9be47c774f16bfbdd117091d1ca"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
