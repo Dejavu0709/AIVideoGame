@@ -18,6 +18,7 @@ public class GameUIController : MonoSingleton<GameUIController>
     public GameObject qtePanel;
     //public ClickQTE clickQTE;
     public MashingQTE mashingQTE;
+    public ShootQTE shootQTE;
 
     [Header("Animation")]
     public float fadeInDuration = 0.5f;
@@ -114,6 +115,7 @@ public class GameUIController : MonoSingleton<GameUIController>
             //    StartCoroutine(TimingQTE(qteData));
             //    break;
             case "clicks":
+            /*
             qtePanel.gameObject.SetActive(true);
             mashingQTE.gameObject.SetActive(true);
             mashingQTE.timesToHit = int.Parse(qteData.param1);
@@ -122,6 +124,19 @@ public class GameUIController : MonoSingleton<GameUIController>
             mashingQTE.time = 5;
             mashingQTE.BeginQTE();
             //clickQTE.ShowQTE(qteData, onQTECompleted);
+                break;
+            case "shoot":
+            */
+                if (shootQTE != null)
+                {
+                    qtePanel.gameObject.SetActive(true);
+                    shootQTE.ShowQTE(qteData, onQTECompleted);
+                }
+                else
+                {
+                    Debug.LogWarning("ShootQTE is not assigned on GameUIController");
+                    onQTECompleted?.Invoke(0);
+                }
                 break;
             default:
                 Debug.LogWarning($"Unknown QTE type: {qteData.type}");
