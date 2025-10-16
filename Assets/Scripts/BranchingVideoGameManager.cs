@@ -9,6 +9,7 @@ public class BranchingVideoGameManager : MonoSingleton<BranchingVideoGameManager
 {
     [Header("Components")]
     public VideoPlayerController videoController;
+    public VideoManager videoManager;
     public GameUIController uiController;
     
     [Header("Game Configuration")]
@@ -217,19 +218,35 @@ private void ShowErrorMessage(string message)
     
     public string GetVideoUrl(string videoFileName)
     {
+        Debug.Log($"GetVideoUrl: {videoFileName}");
+        if(videoManager.advancedVideoManager.isLocalVideo)
+        {
+            return $"{Application.streamingAssetsPath}/Videos/{videoFileName}";
+        }
+        else
+        {
             //gameData.meta.cdnBase = "https://636c-cloud1-7gwlsz5m226cfca9-1369289063.tcb.qcloud.la/AIVideoGame/Videos/";
             string cdnWeb = $"{cdnBase}/Videos/";
             if (!string.IsNullOrEmpty(cdnWeb))
                 return cdnWeb.EndsWith("/") ? (cdnWeb + videoFileName) : ($"{cdnWeb}/{videoFileName}");
             return null;
+        }
     }
     public string GetThumbnailUrl(string thumbnailFileName)
     {
+        Debug.Log($"GetThumbnailUrl: {thumbnailFileName}");
+        if(videoManager.advancedVideoManager.isLocalVideo)
+        {
+            return $"{Application.streamingAssetsPath}/Thumbnails/{thumbnailFileName}";
+        }
+        else
+        {
             //gameData.meta.cdnBase = "https://636c-cloud1-7gwlsz5m226cfca9-1369289063.tcb.qcloud.la/AIVideoGame/Videos/";
             string cdnWeb = $"{cdnBase}/Thumbnails";
             if (!string.IsNullOrEmpty(cdnWeb))
                 return cdnWeb.EndsWith("/") ? (cdnWeb + thumbnailFileName) : ($"{cdnWeb}/{thumbnailFileName}");
             return null;
+        }
     }
     void OnVideoStarted()
     {

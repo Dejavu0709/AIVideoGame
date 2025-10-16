@@ -15,6 +15,14 @@ public class ShootQTE : MonoBehaviour
     public float wobbleAmplitudeY = 1.5f;
     public float wobbleSpeedX = 0.7f;
     public float wobbleSpeedY = 1.1f;
+    public float hideDelaySeconds = 2f;
+    [Header("Audio")]
+    public AudioSource audioSource;
+    public AudioClip gunshotClip;
+    [Header("UI Shake (Canvas)")]
+    public RectTransform uiCanvasToShake;
+    public float shakeDuration = 0.2f; // seconds
+    public float shakeMagnitude = 25f; // pixels
     private System.Action<int> onComplete;
     private Coroutine wobbleCo;
     private QTEData currentData;
@@ -64,6 +72,17 @@ public class ShootQTE : MonoBehaviour
         {
             StopCoroutine(wobbleCo);
             wobbleCo = null;
+        }
+        StartCoroutine(HideAfterDelay());
+    }
+
+    private IEnumerator HideAfterDelay()
+    {
+        float t = 0f;
+        while (t < hideDelaySeconds)
+        {
+            t += Time.deltaTime;
+            yield return null;
         }
         if (scopeOverlay != null) scopeOverlay.SetActive(false);
         if (qtePanel != null) qtePanel.SetActive(false);
@@ -115,6 +134,16 @@ public class ShootQTE : MonoBehaviour
         Vector2 center = new Vector2(0.5f, 0.5f);
         Vector2 rectCenter = new Vector2(0.5f, 0.5f);
         Vector2 rectSize = new Vector2(0.1f, 0.1f);
+        // Play audio
+        if (audioSource != null && gunshotClip != null)
+        {
+            audioSource.PlayOneShot(gunshotClip);
+        }
+        // Shake UI canvas
+        if (uiCanvasToShake != null)
+        {
+            StartCoroutine(ShakeUICanvas(uiCanvasToShake, shakeDuration, shakeMagnitude));
+        }
         if (currentData != null)
         {
             if (!string.IsNullOrEmpty(currentData.param1))
@@ -152,5 +181,21 @@ public class ShootQTE : MonoBehaviour
         bool inside = Mathf.Abs(center.x - rectCenter.x) <= half.x && Mathf.Abs(center.y - rectCenter.y) <= half.y;
         onComplete?.Invoke(inside ? 1 : 0);
         HideQTE();
+    }
+
+    private IEnumerator ShakeUICanvas(RectTransform target, float duration, float magnitude)
+    {
+        if (target == null) yield break;
+        Vector2 originalPos = target.anchoredPosition;
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            // Random inside unit circle, scaled by magnitude (pixels)
+            Vector2 offset = Random.insideUnitCircle * magnitude;
+            target.anchoredPosition = originalPos + offset;
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+        target.anchoredPosition = originalPos;
     }
 }

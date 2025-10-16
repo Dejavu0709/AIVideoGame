@@ -147,14 +147,17 @@ public class VideoManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     public void InitVideo(string videoUrl) {
         canSetTime = true;
         videoPlayer = GetComponent<VideoPlayer>();
-        videoPlayer.source = advancedVideoManager.isLocalVideo ? VideoSource.VideoClip : VideoSource.Url;
+        // Use URL source for both remote and local files. Local files use a file:/// URL.
+        videoPlayer.source = VideoSource.Url;
         if (advancedVideoManager.isLocalVideo) {
-            videoPlayer.clip = null;
-            videoPlayer.clip = advancedVideoManager.templateVideo;
+            string path = videoUrl.Replace("\\", "/");
+            if (!path.StartsWith("file://")) {
+                // On Windows we need three slashes after file:
+                path = "file:///" + path;
+            }
+            videoPlayer.url = path;
             videoPlayer.time = 0;
-            RenderTexture newTexture = new RenderTexture((int)videoPlayer.width, (int)videoPlayer.height, 0);
-            videoPlayer.targetTexture = newTexture;
-            rawImage.texture = newTexture;
+            notLocalInit = false;
         } else {
             videoPlayer.url = videoUrl;
             videoPlayer.time = 0;
@@ -190,7 +193,8 @@ public class VideoManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     /// <param name="source"></param>
     /// <param name="frameIdx"></param>
     private void VideoPlayer_frameReady(VideoPlayer source, long frameIdx) {
-        if (!advancedVideoManager.isLocalVideo && !notLocalInit) {
+        // For URL sources (both local file URLs and remote), create and assign RenderTexture on first frame
+        if (!notLocalInit) {
             notLocalInit = true;
             videoPlayer.time = 0;
             RenderTexture newTexture = new RenderTexture((int)videoPlayer.width, (int)videoPlayer.height, 0);

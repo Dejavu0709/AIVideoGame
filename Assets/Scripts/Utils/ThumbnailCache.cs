@@ -40,20 +40,21 @@ public static class ThumbnailCache
     {
         sprite = null;
         // Prefer .png, fallback to .jpg for legacy assets
-        string[] candidates = new[] { nodeId + ".png" };
-        /*
+        string[] candidates = new[] { nodeId + ".png",nodeId + ".jpg" };
+        
         // 1) Check StreamingAssets (direct file paths only)
         foreach (var fn in candidates)
         {
             string streamingPath = StreamingFilePath(streamingSubfolder, fn);
             bool streamingIsUri = streamingPath.Contains("://") || streamingPath.Contains(":///");
+            Debug.Log("thumbnail streamingPath" + streamingPath + " " + streamingIsUri);
             if (!streamingIsUri && File.Exists(streamingPath))
             {
                 if (TryLoadSpriteFromFile(streamingPath, out sprite))
                     return true;
             }
         }
-*/
+
         // 2) Check local cache folder
         foreach (var fn in candidates)
         {
