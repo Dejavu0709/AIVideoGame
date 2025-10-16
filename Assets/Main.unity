@@ -1101,9 +1101,9 @@ RectTransform:
   - {fileID: 195357246}
   m_Father: {fileID: 657805549}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 1}
-  m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: -140.1}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 164.93, y: -96.18}
   m_SizeDelta: {x: 209.38, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &29176374
@@ -9260,7 +9260,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &354119370
 RectTransform:
   m_ObjectHideFlags: 0
@@ -9308,7 +9308,7 @@ MonoBehaviour:
   hideDelaySeconds: 2
   audioSource: {fileID: 0}
   gunshotClip: {fileID: 0}
-  uiCanvasToShake: {fileID: 0}
+  uiCanvasToShake: {fileID: 17813295}
   shakeDuration: 0.2
   shakeMagnitude: 25
 --- !u!1 &355293530
@@ -14330,6 +14330,7 @@ MonoBehaviour:
   mainCanvasGroup: {fileID: 628531334}
   MainView: {fileID: 17813292}
   DeadView: {fileID: 1184786588}
+  deadDescriptionText: {fileID: 0}
 --- !u!224 &657805549
 RectTransform:
   m_ObjectHideFlags: 0
@@ -29531,7 +29532,7 @@ MonoBehaviour:
   defaultThumbnail: {fileID: 0}
   Content: {fileID: 1261275310}
   BackButton: {fileID: 295168636}
-  showAll: 1
+  showAll: 0
 --- !u!1 &1409133708
 GameObject:
   m_ObjectHideFlags: 0
@@ -43438,7 +43439,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Content: {fileID: 1261275310}
   m_Horizontal: 1
-  m_Vertical: 0
+  m_Vertical: 1
   m_MovementType: 1
   m_Elasticity: 0.1
   m_Inertia: 1

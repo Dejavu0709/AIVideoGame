@@ -25,7 +25,9 @@ public class ShootQTE : MonoBehaviour
     public float shakeMagnitude = 25f; // pixels
     private System.Action<int> onComplete;
     private Coroutine wobbleCo;
+    private Coroutine timeoutCo;
     private QTEData currentData;
+    private bool completed;
     // Start is called before the first frame update
     void Start()
     {
@@ -45,6 +47,7 @@ public class ShootQTE : MonoBehaviour
     {
         this.onComplete = onComplete;
         currentData = qteData;
+        completed = false;
         if (qtePanel != null)
         {
             qtePanel.SetActive(true);
@@ -64,6 +67,16 @@ public class ShootQTE : MonoBehaviour
             StopCoroutine(wobbleCo);
         }
         wobbleCo = StartCoroutine(WobbleRoutine());
+
+        if (timeoutCo != null)
+        {
+            StopCoroutine(timeoutCo);
+            timeoutCo = null;
+        }
+        if (currentData != null && currentData.duration > 0f)
+        {
+            timeoutCo = StartCoroutine(TimeoutRoutine(currentData.duration));
+        }
     }
 
     public void HideQTE()
@@ -72,6 +85,11 @@ public class ShootQTE : MonoBehaviour
         {
             StopCoroutine(wobbleCo);
             wobbleCo = null;
+        }
+        if (timeoutCo != null)
+        {
+            StopCoroutine(timeoutCo);
+            timeoutCo = null;
         }
         StartCoroutine(HideAfterDelay());
     }
@@ -131,6 +149,7 @@ public class ShootQTE : MonoBehaviour
 
     private void OnShootClicked()
     {
+        if (completed) return;
         Vector2 center = new Vector2(0.5f, 0.5f);
         Vector2 rectCenter = new Vector2(0.5f, 0.5f);
         Vector2 rectSize = new Vector2(0.1f, 0.1f);
@@ -179,6 +198,7 @@ public class ShootQTE : MonoBehaviour
         }
         Vector2 half = rectSize * 0.5f;
         bool inside = Mathf.Abs(center.x - rectCenter.x) <= half.x && Mathf.Abs(center.y - rectCenter.y) <= half.y;
+        completed = true;
         onComplete?.Invoke(inside ? 1 : 0);
         HideQTE();
     }
@@ -197,5 +217,22 @@ public class ShootQTE : MonoBehaviour
             yield return null;
         }
         target.anchoredPosition = originalPos;
+    }
+
+    private IEnumerator TimeoutRoutine(float duration)
+    {
+        float t = 0f;
+        while (t < duration)
+        {
+            if (completed) yield break;
+            t += Time.deltaTime;
+            yield return null;
+        }
+        if (!completed)
+        {
+            completed = true;
+            onComplete?.Invoke(0);
+            HideQTE();
+        }
     }
 }

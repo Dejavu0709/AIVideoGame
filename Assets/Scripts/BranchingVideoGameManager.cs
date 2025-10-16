@@ -349,11 +349,17 @@ private void ShowErrorMessage(string message)
             }
             return;
         }
-        if(currentNode.qte != null && currentNode.qte.startDelayFromStartSeconds > 0)//播放过程中已经完成qte结果
+        else if(!string.IsNullOrEmpty(currentNode.next))
         {
-            DecideNextNodeByQTE();
+            PlayNode(currentNode.next);
+            uiController.HideAllCanvasGroup();
             return;
         }
+        // if(currentNode.qte != null && currentNode.qte.startDelayFromStartSeconds > 0)//播放过程中已经完成qte结果
+        // {
+        //     DecideNextNodeByQTE();
+        //     return;
+        // }
         StartCoroutine(ShowInteractionAfterDelay());
     }
     
@@ -437,11 +443,11 @@ private void ShowErrorMessage(string message)
         Debug.Log($"QTE completed: {score}");
         _curScore += score;
         Debug.Log($"currentNode.qte.startDelayFromStartSeconds: {currentNode.qte.startDelayFromStartSeconds}");
-        if(currentNode.qte.startDelayFromStartSeconds > 0)
-        {
-            return;
-        }
-        else
+        // if(currentNode.qte.startDelayFromStartSeconds > 0)
+        // {
+        //     return;
+        // }
+        // else
         {
             DecideNextNodeByQTE();
         }
@@ -459,40 +465,30 @@ private void ShowErrorMessage(string message)
             var map = currentNode.qte.NextNodeMap;
             if (map != null && map.Count > 0)
             {
-                // Default to the smallest key
-                int smallestKey = int.MaxValue;
-                string smallestValue = null;
-                foreach (var kv in map)
+                map.TryGetValue(_curScore, out nextNodeId);
+                if (!string.IsNullOrEmpty(nextNodeId))
                 {
-                    Debug.Log($"Key: {kv.Key}, Value: {kv.Value}");
-                    if (kv.Key < smallestKey) { smallestKey = kv.Key; smallestValue = kv.Value; }
+                    PlayNode(nextNodeId);
+                    uiController.HideAllCanvasGroup();
                 }
-                nextNodeId = smallestValue;
+                else //默认成功继续播放视频
+                {
 
-                // Choose the largest key <= score
-                int chosenKey = int.MinValue; string chosenValue = null;
-                foreach (var kv in map)
-                {
-                    if (kv.Key <= _curScore && kv.Key > chosenKey)
-                    {
-                        chosenKey = kv.Key; chosenValue = kv.Value;
-                    }
                 }
-                if (!string.IsNullOrEmpty(chosenValue)) nextNodeId = chosenValue;
             }
             
-            if (!string.IsNullOrEmpty(nextNodeId))
-            {
-                PlayNode(nextNodeId);
-            }
-            else
-            {
-                Debug.LogWarning("QTE next node ID is empty! Treat as death.");
-                if (uiController != null)
-                {
-                    uiController.ShowDeath(currentNode);
-                }
-            }
+            // if (!string.IsNullOrEmpty(nextNodeId))
+            // {
+            //     PlayNode(nextNodeId);
+            // }
+            // else
+            // {
+            //     Debug.LogWarning("QTE next node ID is empty! Treat as death.");
+            //     if (uiController != null)
+            //     {
+            //         uiController.ShowDeath(currentNode);
+            //     }
+            // }
         }
     }
     

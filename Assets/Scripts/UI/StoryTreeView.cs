@@ -151,6 +151,10 @@ public class StoryTreeView : MonoBehaviour
                 //if (!string.IsNullOrEmpty(node.qte.successNext) && node.qte.successNext != node.id) children[node.id].Add(node.qte.successNext);
                 //if (!string.IsNullOrEmpty(node.qte.failNext) && node.qte.failNext != node.id) children[node.id].Add(node.qte.failNext);
             }
+            if(!string.IsNullOrEmpty(node.next))
+            {
+                children[node.id].Add(node.next);
+            }
         }
 
         // BFS to assign levels (depths)
