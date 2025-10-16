@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.IO;
 using UnityEngine;
 using UnityEngine.Networking;
 using NexgenDragon;
@@ -16,7 +18,8 @@ public class BranchingVideoGameManager : MonoSingleton<BranchingVideoGameManager
     public TextAsset gameDataJson;
 
     public string cdnBase = "https://636c-cloud1-7gwlsz5m226cfca9-1369289063.tcb.qcloud.la/AIVideoGame";
-    public string gameDataUrl; // Alternative: load from URL
+    public string gameDataUrl; // Remote URL
+    public string gameDataLocalUrl; // Local path or StreamingAssets-relative path
     
     [Header("Settings")]
     public float delayBeforeShowingChoices = 1f;
@@ -31,6 +34,10 @@ public class BranchingVideoGameManager : MonoSingleton<BranchingVideoGameManager
     private bool qteShownForCurrentNode = false;
     private bool qtePendingForCurrentNode = false;
     private float qtePendingDelaySeconds = 0f;
+
+    // Progress: visited nodes
+    private const string PlayerPrefsVisitedKey = "BVGM_VisitedNodes";
+    private HashSet<string> visitedNodes = new HashSet<string>();
 
     public static GameData GameData { get => gameData; set => gameData = value; }
 
@@ -53,6 +60,8 @@ public class BranchingVideoGameManager : MonoSingleton<BranchingVideoGameManager
             videoController.OnVideoFinished.AddListener(OnVideoFinished);
             videoController.OnVideoStarted.AddListener(OnVideoStarted);
         }
+        // Load progress after data is ready
+        LoadProgress();
     }
     
    // Replace the existing LoadGameData method with this implementation
@@ -72,9 +81,14 @@ bool LoadGameData()
             return false;
         }
     }
+    else if (!string.IsNullOrEmpty(gameDataLocalUrl))
+    {
+        StartCoroutine(LoadGameDataFromInput(gameDataLocalUrl, true));
+        return true; // started async loading
+    }
     else if (!string.IsNullOrEmpty(gameDataUrl))
     {
-        StartCoroutine(LoadGameDataFromUrl());
+        StartCoroutine(LoadGameDataFromInput(gameDataUrl, false));
         return true; // Return true as we've started the loading process
     }
     
@@ -82,17 +96,54 @@ bool LoadGameData()
     return false;
 }
 
-// Add this new coroutine method to your BranchingVideoGameManager class
-private IEnumerator LoadGameDataFromUrl()
+// Unified loader for both local and remote inputs
+private IEnumerator LoadGameDataFromInput(string inputPath, bool preferLocal)
 {
-    Debug.Log($"Loading game data from URL: {gameDataUrl}");
-    
-    using (UnityWebRequest request = UnityWebRequest.Get(gameDataUrl))
+    // Compute final URL for inputPath
+    string input = inputPath?.Trim();
+    if (string.IsNullOrEmpty(input))
     {
-        Debug.Log($"1Loading game data from URL: {gameDataUrl}");
+        Debug.LogError("gameDataUrl is empty");
+        yield break;
+    }
+
+    string finalUrl = input;
+    bool hasScheme = input.Contains("://");
+
+    // If no scheme and not rooted
+    if (!hasScheme && !Path.IsPathRooted(input))
+    {
+        if (preferLocal)
+        {
+            // Relative to StreamingAssets
+            string localPath = Path.Combine(Application.streamingAssetsPath, input).Replace("\\", "/");
+            bool localHasScheme = localPath.Contains("://");
+            finalUrl = localHasScheme ? localPath : ("file:///" + localPath);
+        }
+        else
+        {
+            // For remote without scheme, assume https (rare). Users should provide full URL.
+            Debug.LogWarning($"Input '{input}' has no scheme; attempting to treat as StreamingAssets relative.");
+            string localPath = Path.Combine(Application.streamingAssetsPath, input).Replace("\\", "/");
+            finalUrl = "file:///" + localPath;
+        }
+    }
+    // If absolute path to existing file, convert to file URL
+    else if (!hasScheme && Path.IsPathRooted(input) && File.Exists(input))
+    {
+        string normalized = input.Replace("\\", "/");
+        finalUrl = normalized.StartsWith("file://") ? normalized : ("file:///" + normalized);
+    }
+    // else: keep as provided (http/https or platform-specific scheme)
+
+    Debug.Log($"Loading game data from URL: {finalUrl}");
+
+    using (UnityWebRequest request = UnityWebRequest.Get(finalUrl))
+    {
+        Debug.Log($"1Loading game data from URL: {finalUrl}");
         // Send the request and wait for it to complete
         yield return request.SendWebRequest();
-        Debug.Log($"2Loading game data from URL: {gameDataUrl}");
+        Debug.Log($"2Loading game data from URL: {finalUrl}");
         
         if (request.result == UnityWebRequest.Result.Success)
         {
@@ -182,6 +233,8 @@ private void ShowErrorMessage(string message)
         }
         
         currentNode = nodeLookup[nodeId];
+        // Mark visited and persist
+        MarkVisited(currentNode.id);
         // reset QTE state for the new node
         if (qteDelayRoutine != null)
         {
@@ -287,7 +340,16 @@ private void ShowErrorMessage(string message)
         
         if (currentNode == null)
             return;
-        if(currentNode.qte.startDelayFromStartSeconds > 0)//播放过程中已经完成qte结果
+        // If this node is explicitly marked as an end/death node, show death UI
+        if (currentNode.isEnd)
+        {
+            if (uiController != null)
+            {
+                uiController.ShowDeath(currentNode);
+            }
+            return;
+        }
+        if(currentNode.qte != null && currentNode.qte.startDelayFromStartSeconds > 0)//播放过程中已经完成qte结果
         {
             DecideNextNodeByQTE();
             return;
@@ -361,8 +423,12 @@ private void ShowErrorMessage(string message)
         }
         else
         {
-            Debug.LogWarning("Next node ID is empty!");
-            OnGameFinished();
+            Debug.LogWarning("Next node ID is empty! Treat as death.");
+            // Show death view and pause gameplay
+            if (uiController != null)
+            {
+                uiController.ShowDeath(currentNode);
+            }
         }
     }
     private int _curScore = 0;
@@ -421,8 +487,11 @@ private void ShowErrorMessage(string message)
             }
             else
             {
-                Debug.LogWarning("QTE next node ID is empty!");
-                OnGameFinished();
+                Debug.LogWarning("QTE next node ID is empty! Treat as death.");
+                if (uiController != null)
+                {
+                    uiController.ShowDeath(currentNode);
+                }
             }
         }
     }
@@ -488,6 +557,43 @@ private void ShowErrorMessage(string message)
     public bool IsGameActive()
     {
         return isGameActive;
+    }
+    
+    // Progress persistence
+    private void LoadProgress()
+    {
+        visitedNodes.Clear();
+        var saved = PlayerPrefs.GetString(PlayerPrefsVisitedKey, string.Empty);
+        if (!string.IsNullOrEmpty(saved))
+        {
+            var parts = saved.Split(',');
+            foreach (var id in parts)
+            {
+                var t = id.Trim();
+                if (!string.IsNullOrEmpty(t)) visitedNodes.Add(t);
+            }
+        }
+    }
+
+    private void SaveProgress()
+    {
+        var list = visitedNodes.ToList();
+        PlayerPrefs.SetString(PlayerPrefsVisitedKey, string.Join(",", list));
+        PlayerPrefs.Save();
+    }
+
+    private void MarkVisited(string nodeId)
+    {
+        if (string.IsNullOrEmpty(nodeId)) return;
+        if (visitedNodes.Add(nodeId))
+        {
+            SaveProgress();
+        }
+    }
+
+    public IReadOnlyCollection<string> GetVisitedNodes()
+    {
+        return visitedNodes;
     }
     
     // Debug methods

@@ -6,6 +6,7 @@ using System.Collections;
 using NexgenDragon;
 using Michsky.UI.Dark;
 using QTESystem;
+using UnityEditor.Experimental.GraphView;
 public class GameUIController : MonoSingleton<GameUIController>
 {
     [Header("UI Elements")]
@@ -38,6 +39,9 @@ public class GameUIController : MonoSingleton<GameUIController>
     public CanvasGroup mainCanvasGroup;
 
     public ModalWindowManager MainView;
+    public ModalWindowManager DeadView;
+    [Header("Death View")]
+    public TextMeshProUGUI deadDescriptionText; // Assign to DeadView's description label
 
     void Start()
     {
@@ -341,6 +345,7 @@ public class GameUIController : MonoSingleton<GameUIController>
 
     public void ShowTreeView()
     {
+        DeadView.ModalWindowOut();
         VideoPlayerController.Instance.PauseVideo();
         if (TreeView == null)
         {
@@ -366,5 +371,41 @@ public class GameUIController : MonoSingleton<GameUIController>
         Debug.Log("OnPlayButtonClicked");
         MainView.gameObject.SetActive(true);
         BranchingVideoGameManager.Instance.StartGame();
+    }
+
+    // Death flow
+    public void ShowDeath(GameNode currentNode)
+    {
+        Debug.Log("ShowDeath");
+        // Pause any playing video and hide interactive UI
+        VideoPlayerController.Instance.PauseVideo();
+        HideChoices();
+        HideQTE();
+        // Show death modal/page
+        if (DeadView != null)
+        {
+            DeadView.gameObject.SetActive(true);
+            DeadView.ModalWindowIn();
+            
+        }
+        // Set death description if available
+        if (DeadView.description != null)
+        {
+            DeadView.description = (currentNode != null && !string.IsNullOrEmpty(currentNode.deathdesc))
+                ? currentNode.deathdesc
+                : string.Empty;
+        }
+    }
+
+    // Hook this to a close button on DeadView
+    public void CloseDeathAndShowTree()
+    {
+        Debug.Log("CloseDeathAndShowTree");
+        if (DeadView != null)
+        {
+            DeadView.gameObject.SetActive(false);
+        }
+        // Open the story tree to review progress
+        ShowTreeView();
     }
 }

@@ -25,6 +25,8 @@ public class GameNode
     public string question;
     public List<Choice> choices;
     public QTEData qte; // Optional QTE data
+    public bool isEnd;
+    public string deathdesc; // Death description shown on death screen
 }
 
 [System.Serializable]

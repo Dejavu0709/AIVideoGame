@@ -304,7 +304,6 @@ public class VideoManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     /// Update method
     /// </summary>
     private void Update() {
-        return;
         if (Input.GetKeyDown(KeyCode.UpArrow)) {
             ChangeVolumeOffset(1);
         }
@@ -332,6 +331,7 @@ public class VideoManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
                 if (canSetSlider) {
                     targetSlider.value = (float)videoPlayer.time;
                 }
+                Debug.Log("IsVideoEnded() = " + IsVideoEnded());
                 if (IsVideoEnded()) {
                     if (!isEnd)
                     {
@@ -436,7 +436,9 @@ public class VideoManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     /// </summary>
     /// <returns></returns>
     public bool IsVideoEnded() {
-        return (int)videoPlayer.length == (int)videoPlayer.time;
+        //Debug.Log("videoPlayer.length = " + videoPlayer.length);
+       // Debug.Log("videoPlayer.time = " + videoPlayer.time);
+        return videoPlayer.length - videoPlayer.time < 0.15;
     }
 
     public void InterfaceOpened() {

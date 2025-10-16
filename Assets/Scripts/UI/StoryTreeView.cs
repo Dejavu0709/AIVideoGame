@@ -35,6 +35,9 @@ public class StoryTreeView : MonoBehaviour
     public Transform Content;
 
     public Button BackButton;
+    
+    [Header("Options")]
+    public bool showAll = false; // When true, show the full storyline regardless of visited
 
     private readonly Dictionary<string, NodeUI> _nodeUIs = new Dictionary<string, NodeUI>();
     private readonly List<UIEdge> _edges = new List<UIEdge>();
@@ -49,7 +52,8 @@ public class StoryTreeView : MonoBehaviour
         BackButton.onClick.RemoveListener(BackToVideo);
     }
     /// <summary>
-    /// Build the tree from GameData. Clears previous UI children.
+    /// Build the tree from GameData, showing ONLY visited nodes/edges.
+    /// Clears previous UI children.
     /// </summary>
     private void Build(GameData data)
     {
@@ -59,8 +63,34 @@ public class StoryTreeView : MonoBehaviour
             return;
         }
 
+        // Get visited set
+        var mgr = BranchingVideoGameManager.Instance;
+        var visitedSet = (mgr != null ? mgr.GetVisitedNodes() : null) ?? Array.Empty<string>();
+        var visited = new HashSet<string>(visitedSet);
+        if (showAll && data.nodes != null)
+        {
+            // Treat all nodes as visited to display the entire storyline
+            visited = new HashSet<string>(data.nodes.Select(n => n.id));
+        }
+        if (visited.Count == 0)
+        {
+            Clear();
+            return;
+        }
+
         string startId = data.meta != null ? data.meta.startNodeId : data.nodes[0].id;
         if (string.IsNullOrEmpty(startId)) startId = data.nodes[0].id;
+        // If start not visited, pick first visited node to anchor layout
+        if (!visited.Contains(startId))
+        {
+            var firstVisited = data.nodes.FirstOrDefault(n => visited.Contains(n.id));
+            if (firstVisited == null)
+            {
+                Clear();
+                return;
+            }
+            startId = firstVisited.id;
+        }
 
         Clear();
 
@@ -87,13 +117,14 @@ public class StoryTreeView : MonoBehaviour
             nodesContainer.SetSiblingIndex(1);
         }
 
-        // Index nodes by id
-        var nodeById = data.nodes.ToDictionary(n => n.id, n => n);
+        // Index nodes by id (only visited)
+        var nodeById = data.nodes.Where(n => visited.Contains(n.id)).ToDictionary(n => n.id, n => n);
 
         // Build adjacency & in-degree for BFS layering
         var children = new Dictionary<string, HashSet<string>>();
         foreach (var node in data.nodes)
         {
+            if (!visited.Contains(node.id)) continue; // only visited parent nodes
             if (!children.ContainsKey(node.id)) children[node.id] = new HashSet<string>();
             if (node.choices != null)
             {
@@ -101,7 +132,7 @@ public class StoryTreeView : MonoBehaviour
                 {
                     if (!string.IsNullOrEmpty(c.next))
                     {
-                        if (c.next != node.id) children[node.id].Add(c.next);
+                        if (c.next != node.id && visited.Contains(c.next)) children[node.id].Add(c.next);
                     }
                 }
             }
@@ -109,7 +140,7 @@ public class StoryTreeView : MonoBehaviour
             {
                 foreach (var kv in node.qte.NextNodeMap)
                 {
-                    if (!string.IsNullOrEmpty(kv.Value) && kv.Value != node.id)
+                    if (!string.IsNullOrEmpty(kv.Value) && kv.Value != node.id && visited.Contains(kv.Value))
                     {
                         children[node.id].Add(kv.Value);
                         Debug.Log(node.id + ":" + kv.Value);
@@ -124,7 +155,7 @@ public class StoryTreeView : MonoBehaviour
 
         // BFS to assign levels (depths)
         var level = new Dictionary<string, int>();
-        var visited = new HashSet<string>();
+        var bfsVisited = new HashSet<string>();
         var q = new Queue<string>();
 
         if (!nodeById.ContainsKey(startId))
@@ -135,7 +166,7 @@ public class StoryTreeView : MonoBehaviour
 
         q.Enqueue(startId);
         level[startId] = 0;
-        visited.Add(startId);
+        bfsVisited.Add(startId);
 
         while (q.Count > 0)
         {
@@ -149,14 +180,14 @@ public class StoryTreeView : MonoBehaviour
                 {
                     level[nx] = nextLevel;
                 }
-                if (visited.Add(nx))
+                if (bfsVisited.Add(nx))
                 {
                     q.Enqueue(nx);
                 }
             }
         }
 
-        // Add any disconnected nodes after BFS
+        // Add any disconnected visited nodes after BFS
         foreach (var id in nodeById.Keys)
         {
             if (!level.ContainsKey(id))
@@ -169,7 +200,7 @@ public class StoryTreeView : MonoBehaviour
             .OrderBy(g => g.Key)
             .ToDictionary(g => g.Key, g => g.Select(kv => kv.Key).ToList());
 
-        // Instantiate nodes and layout
+        // Instantiate nodes and layout (visited only)
         _nodeUIs.Clear();
 
         foreach (var kv in groups)
@@ -186,6 +217,7 @@ public class StoryTreeView : MonoBehaviour
             for (int i = 0; i < ids.Count; i++)
             {
                 var id = ids[i];
+                if (!nodeById.ContainsKey(id)) continue;
                 var n = nodeById[id];
                 var nodeUI = Instantiate(nodePrefab, nodesContainer);
                 nodeUI.name = $"Node_{id}";
@@ -233,7 +265,7 @@ public class StoryTreeView : MonoBehaviour
         // After nodes are placed, ensure Content is large enough and shift nodes so min corner has padding inside Content
         FitContentAndOffsetNodes();
 
-        // Draw edges
+        // Draw edges (only between visited nodes)
         var addedEdges = new HashSet<string>();
         foreach (var fromId in children.Keys)
         {
@@ -445,11 +477,8 @@ public class StoryTreeView : MonoBehaviour
 
     public void Show()
     {
-        if (_nodeUIs.Count == 0)
-        {
-            Build(BranchingVideoGameManager.GameData);
-        }
-        //Todo update
+        Clear();
+        Build(BranchingVideoGameManager.GameData);
     }
 
     public void Hide()
