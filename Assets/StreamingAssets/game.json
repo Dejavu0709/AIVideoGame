@@ -23,15 +23,23 @@
     {
       "id": "N03",
       "video": "03.mp4",
-      "question": "你是否可以回忆起她？",
-      "choices": [ 
-        {"label": "时间太久远了想不起来", "next": "N04"},
-        {"label": "好像有点印象", "next": "N04"} 
-      ]
+      "qte": {
+        "type": "shoot",
+        "duration": 5,
+        "NextNodeMap": {
+          "1": "N04",
+          "0": "N05"
+        },
+        "startDelayFromStartSeconds": 6,
+        "param1": "0,0",
+        "param2": "300,300",
+        "param3": null
+      }
+
     },
     {
       "id": "N04",
-      "video": "04-1.mp4",
+      "video": "04.mp4",
       "question": "寻求帮助",
       "choices": [ 
         { "label": "给我点帮助", "next": "N05" },
@@ -40,12 +48,9 @@
     },
     {
       "id": "N05",
-      "video": "05-1.mp4",
-      "question": "可以让她搜索你的iCloud照片吗？",
-      "choices": [
-        { "label": "那个时候还没有这些电子照片", "next": "N06" },
-        { "label": "不可以！有我的全裸自拍呢！", "next": "N06" }
-      ]
+      "video": "05.mp4",
+	  "deathdesc": "YOU MiSS THE CHANCE",
+	  "isEnd": true
     },
     {
       "id": "N06",

@@ -331,7 +331,7 @@ public class VideoManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
                 if (canSetSlider) {
                     targetSlider.value = (float)videoPlayer.time;
                 }
-                Debug.Log("IsVideoEnded() = " + IsVideoEnded());
+                //Debug.Log("IsVideoEnded() = " + IsVideoEnded());
                 if (IsVideoEnded()) {
                     if (!isEnd)
                     {
