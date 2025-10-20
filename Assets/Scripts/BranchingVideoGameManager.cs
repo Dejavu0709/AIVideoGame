@@ -115,17 +115,14 @@ private IEnumerator LoadGameDataFromInput(string inputPath, bool preferLocal)
     {
         if (preferLocal)
         {
-            // Relative to StreamingAssets
-            string localPath = Path.Combine(Application.streamingAssetsPath, input).Replace("\\", "/");
-            bool localHasScheme = localPath.Contains("://");
-            finalUrl = localHasScheme ? localPath : ("file:///" + localPath);
+            // Relative to StreamingAssets (platform-aware)
+            finalUrl = BuildStreamingUrl(input);
         }
         else
         {
             // For remote without scheme, assume https (rare). Users should provide full URL.
             Debug.LogWarning($"Input '{input}' has no scheme; attempting to treat as StreamingAssets relative.");
-            string localPath = Path.Combine(Application.streamingAssetsPath, input).Replace("\\", "/");
-            finalUrl = "file:///" + localPath;
+            finalUrl = BuildStreamingUrl(input);
         }
     }
     // If absolute path to existing file, convert to file URL
@@ -181,6 +178,32 @@ private void ShowErrorMessage(string message)
     Debug.LogError(message);
     // Example: if (uiController != null) uiController.ShowError(message);
 }
+
+  // Build a platform-aware URL to access a file inside StreamingAssets.
+  // - Android: Application.streamingAssetsPath is a jar URL already; return combined as-is.
+  // - WebGL: Application.streamingAssetsPath is a URL path served by the build; return combined without file scheme.
+  // - iOS/Desktop/Editor: requires file:/// prefix.
+  private string BuildStreamingUrl(string relativePath)
+  {
+      string basePath = Application.streamingAssetsPath;
+      string combined = string.IsNullOrEmpty(relativePath)
+          ? basePath
+          : Path.Combine(basePath, relativePath).Replace("\\", "/");
+
+      bool hasScheme = combined.Contains("://");
+
+#if UNITY_ANDROID && !UNITY_EDITOR
+      // e.g. jar:file:///...!/assets/...
+      return combined;
+#elif UNITY_WEBGL && !UNITY_EDITOR
+      // Served by web server; should not use file scheme
+      return combined;
+#else
+      // iOS, Windows, macOS, Editor
+      return hasScheme ? combined : ("file:///" + combined);
+#endif
+  }
+
     void CreateNodeLookup()
     {
         nodeLookup = new Dictionary<string, GameNode>();
@@ -274,7 +297,8 @@ private void ShowErrorMessage(string message)
         Debug.Log($"GetVideoUrl: {videoFileName}");
         if(videoManager.advancedVideoManager.isLocalVideo)
         {
-            return $"{Application.streamingAssetsPath}/Videos/{videoFileName}";
+            // Use platform-aware StreamingAssets URL
+            return BuildStreamingUrl($"Videos/{videoFileName}");
         }
         else
         {
@@ -290,12 +314,13 @@ private void ShowErrorMessage(string message)
         Debug.Log($"GetThumbnailUrl: {thumbnailFileName}");
         if(videoManager.advancedVideoManager.isLocalVideo)
         {
-            return $"{Application.streamingAssetsPath}/Thumbnails/{thumbnailFileName}";
+            // Use platform-aware StreamingAssets URL
+            return BuildStreamingUrl($"Thumbnails/{thumbnailFileName}");
         }
         else
         {
             //gameData.meta.cdnBase = "https://636c-cloud1-7gwlsz5m226cfca9-1369289063.tcb.qcloud.la/AIVideoGame/Videos/";
-            string cdnWeb = $"{cdnBase}/Thumbnails";
+            string cdnWeb = $"{cdnBase}/Thumbnails/";
             if (!string.IsNullOrEmpty(cdnWeb))
                 return cdnWeb.EndsWith("/") ? (cdnWeb + thumbnailFileName) : ($"{cdnWeb}/{thumbnailFileName}");
             return null;

@@ -27,13 +27,14 @@ public static class ThumbnailCache
         #if UNITY_EDITOR
         return null;
         #endif
-
+        #if UNITY_WEBGL || WEIXINMINIGAME || PLATFORM_WEIXINMINIGAME
         string path = WX.env.USER_DATA_PATH;
         Debug.Log("path" + path);
         string cachePath = Path.Combine(path, fileName);
         Debug.Log("cachePath" + cachePath);
         return cachePath;
-        //return Path.Combine(CacheDir, fileName);
+        #endif
+        return Path.Combine(CacheDir, fileName);
     }
 
     public static bool TryLoadLocal(string nodeId, string streamingSubfolder, out Sprite sprite)
@@ -83,33 +84,37 @@ public static class ThumbnailCache
             yield break;
         }
         Debug.Log($"LoadOrDownload download  for '{url}'");
-        /*
         // If StreamingAssets path is not a regular file (e.g., Android/WebGL), try to load it via UnityWebRequest
-        string fileName = videoFileName + ".png";
-        string streamingPath = StreamingFilePath(streamingSubfolder, fileName);
-        bool streamingIsUri = streamingPath.Contains("://") || streamingPath.Contains(":///");
-        if (streamingIsUri)
         {
-            using (UnityWebRequest req = UnityWebRequestTexture.GetTexture(streamingPath))
+            string[] exts = new [] { ".png", ".jpg" };
+            for (int i = 0; i < exts.Length; i++)
             {
-                yield return req.SendWebRequest();
-#if UNITY_2020_2_OR_NEWER
-                if (req.result == UnityWebRequest.Result.Success)
-#else
-                if (!(req.isNetworkError || req.isHttpError))
-#endif
+                string fileName = videoFileName + exts[i];
+                string streamingPath = StreamingFilePath(streamingSubfolder, fileName);
+                bool streamingIsUri = streamingPath.Contains("://") || streamingPath.Contains(":///");
+                if (streamingIsUri)
                 {
-                    var texFromSA = DownloadHandlerTexture.GetContent(req);
-                    if (texFromSA != null)
+                    using (UnityWebRequest req = UnityWebRequestTexture.GetTexture(streamingPath))
                     {
-                        var sp = Sprite.Create(texFromSA, new Rect(0, 0, texFromSA.width, texFromSA.height), new Vector2(0.5f, 0.5f));
-                        onLoaded?.Invoke(sp);
-                        yield break;
+                        yield return req.SendWebRequest();
+#if UNITY_2020_2_OR_NEWER
+                        if (req.result == UnityWebRequest.Result.Success)
+#else
+                        if (!(req.isNetworkError || req.isHttpError))
+#endif
+                        {
+                            var texFromSA = DownloadHandlerTexture.GetContent(req);
+                            if (texFromSA != null)
+                            {
+                                var sp = Sprite.Create(texFromSA, new Rect(0, 0, texFromSA.width, texFromSA.height), new Vector2(0.5f, 0.5f));
+                                onLoaded?.Invoke(sp);
+                                yield break;
+                            }
+                        }
                     }
                 }
             }
         }
-        */
         Debug.Log($"Thumbnail download  for '{url}'");
 
 #if UNITY_WEBGL || WEIXINMINIGAME && !UNITY_EDITOR

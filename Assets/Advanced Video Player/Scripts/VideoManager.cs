@@ -151,11 +151,16 @@ public class VideoManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         videoPlayer.source = VideoSource.Url;
         if (advancedVideoManager.isLocalVideo) {
             string path = videoUrl.Replace("\\", "/");
-            if (!path.StartsWith("file://")) {
-                // On Windows we need three slashes after file:
-                path = "file:///" + path;
+            // If it already has a URI scheme (e.g., jar:file:// on Android, http(s) or file), use as-is
+            if (path.Contains("://")) {
+                videoPlayer.url = path;
+            } else {
+                // Otherwise ensure file:/// prefix with three slashes
+                if (!path.StartsWith("file://")) {
+                    path = "file:///" + path;
+                }
+                videoPlayer.url = path;
             }
-            videoPlayer.url = path;
             videoPlayer.time = 0;
             notLocalInit = false;
         } else {
