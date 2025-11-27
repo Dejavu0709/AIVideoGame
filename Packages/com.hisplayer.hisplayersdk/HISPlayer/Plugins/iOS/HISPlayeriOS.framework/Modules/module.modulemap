@@ -1,0 +1,4 @@
+framework module HISPlayeriOS {
+  header "HISPlayeriOS-Swift.h"
+  requires objc
+}

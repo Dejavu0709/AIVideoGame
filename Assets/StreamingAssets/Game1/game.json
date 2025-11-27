@@ -1,0 +1,272 @@
+{
+  "meta": {
+    "title": "LinearGame Demo",
+    "cdnBase": "https://lgdemogame.s3.ap-northeast-3.amazonaws.com/memory",
+    "startNodeId": "NP0"
+  },
+  "nodes": [
+  	{
+      "id": "NP0",
+      "video": "p0.mp4",
+	  	  "title": "Highway",
+      "question": "How do you get over this fence?",
+      "choices": [
+        {"label": "Cut the wire", "next": "NP0-a"},
+        {"label": "Crawl through the hole", "next": "NP0-b"}
+      ],
+	  "qte": {
+        "type": "swipe",
+        "duration": 2,
+        "NextNodeMap": {
+          "0": "NP0-f"
+        },
+		"position": "0.5,0.5",
+        "startDelayFromStartSeconds": 18,
+        "param1": "right",
+        "param2": null,
+        "param3": null
+      }
+    },
+	{
+      "id": "NP0-f",
+      "video": "p0-f.mp4",
+	  	  "title": "Crash",
+	  "deathdesc": "YOU MUST TAKE THE CHOICE",
+	  "isEnd": true
+    },
+	{
+      "id": "NP0-a",
+      "video": "p0-a.mp4",
+	  	  "title": "Cut the wire",
+	  "next": "NP1"
+    },
+	{
+      "id": "NP0-b",
+      "video": "p0-b.mp4",
+	  	  "title": "Go through the hole",
+	  "next": "NP1"
+    },
+	
+	{
+      "id": "NP1",
+      "video": "p1.mp4",
+	  	  "title": "Finish the job",
+	  // 同一段视频里的多个 QTE
+     "qteGroup": [
+    {
+      "type": "clicks",
+      "duration": 3.0,
+      "NextNodeMap": null,                // 由节点层面的 qteNextNodeMap 统一决定去向
+      "startDelayFromStartSeconds": 17,  // 第 5 秒出现
+      "position": "0.5,0.62",              // 屏幕中间
+      "param1": "15",                     // 向上滑
+      "param2": "150",                    // 最小滑动距离 像素
+      "param3": "45",                     // 角度容差（与你当前 SwipeQTE 的用法一致）     
+    },
+    {
+      "type": "swipe",
+      "duration": 2.0,
+      "NextNodeMap": null,
+      "startDelayFromStartSeconds": 28, // 第 10 秒出现
+      "position": "0.6,0.5",
+      "param1": "up",
+      "param2": "150",
+      "param3": "45",
+    },
+    {
+      "type": "clicks",
+      "duration": 5.0,
+      "NextNodeMap": null,
+      "startDelayFromStartSeconds": 68, // 第 15 秒出现
+      "position": "0.5,0.55",
+      "param1": "20",
+      "param2": "150",
+      "param3": "45",
+    }
+  ],
+
+  // 组 QTE 的总分 -> 下一个节点
+  // BranchingVideoGameManager 里会把这一组所有 QTE 的分数累加到 _curScore，然后用这个字典跳转
+  "qteNextNodeMap": {
+    "0": "NP1-f",   // 全部失败
+    "1": "NP1-f",
+    "2": "N0",
+    "3": "N0"
+  },
+        
+    },
+	{
+      "id": "NP1-f",
+      "video": "p1-f.mp4",
+	  	  "title": "Chopper gone",
+	  "deathdesc": "YOU MUST TAKE THE CHOICE",
+	  "isEnd": true
+    },
+	
+	
+	{
+      "id": "N0",
+      "video": "0.mp4",
+	  "title": "A Job Offer",
+      "question": "Something about this job feels off… Do you take it?",
+      "choices": [
+        {"label": "Fine. One last time.", "next": "N0-a"},
+        {"label": "No way — this already sounds bad.", "next": "N0-b"}
+      ],
+    },
+	{
+      "id": "N0-a",
+	  "title": "Fine. One last time.",
+      "video": "0-a.mp4",
+	  "next": "N01"
+    },
+	{
+      "id": "N0-b",
+	  	  "title": "No way ",
+      "video": "0-b.mp4",
+	  "next": "N01"
+    },
+    {
+      "id": "N01",
+      "video": "1.mp4",
+	  "title": "Warehouse Shootout",
+      "question": "We are trapped. What Now?",
+      "choices": [
+        {"label": "Warehouse — I know a way out.", "next": "N03"},
+        {"label": "Trust me… got a trick.", "next": "N04"}
+      ],
+	   "qte": {
+        "type": "shoot",
+        "duration": 2,
+        "NextNodeMap": {
+          "0": "N02"
+        },
+		"position": "0.5,0.5",
+        "startDelayFromStartSeconds": 60,
+        "param1": "0.5,0.5",
+        "param2": "500,500",
+        "param3": null
+      }
+    },
+	{
+      "id": "N02",
+	  "title": "High-Speed Car Chase",
+      "video": "1-c.mp4",
+	  "deathdesc": "YOU MUST TAKE THE CHOICE",
+	  "isEnd": true
+    },
+	{
+      "id": "N03",
+	  	  "title": "Fine. One last time",
+      "video": "1-a.mp4",
+	  "deathdesc": "YOU MUST MAKE YOUR CHOICE CAREFULLY",
+	  "isEnd": true
+    },
+	
+	{
+      "id": "N04",
+	  	  "title": "No way",
+      "video": "1-b.mp4",
+	  "next": "N05"
+    },
+	
+	{
+      "id": "N05",
+	  	  "title": "High-Speed Car Chase",
+      "video": "2.mp4",
+      "question": "Highway or side route — what is it gonna be?",
+      "choices": [
+        {"label": "Highway", "next": "N06"},
+        {"label": "Side route", "next": "N07"}
+      ],
+    },
+	{
+      "id": "N06",
+	  	  "title": "Highway",
+      "video": "2-a.mp4",
+	  "next": "N08"
+    },
+	{
+      "id": "N07",
+	  	  "title": "Side route",
+      "video": "2-b.mp4",
+	  "deathdesc": "YOU MUST MAKE YOUR CHOICE CAREFULLY",
+	  "isEnd": true
+    },
+	
+	
+	{
+      "id": "N08",
+	  	  "title": "Meeting at the Dock",
+      "video": "3.mp4",
+      "question": "Should I trust Sarah?",
+      "choices": [
+        {"label": "Still seems okay.", "next": "N09"},
+        {"label": "Nah, something is not right with her.", "next": "N10"}
+      ],
+    },
+	{
+      "id": "N09",
+	  	  "title": "Still seems okay",
+      "video": "3-a.mp4",
+	  "next": "N11"
+    },
+	{
+      "id": "N10",
+	  	  "title": "Something is off",
+      "video": "3-b.mp4",
+	  "deathdesc": "YOU MUST MAKE YOUR CHOICE CAREFULLY",
+	  "isEnd": true
+    },
+
+	{
+      "id": "N11",
+      "video": "4.mp4",
+	  	  "title": "Boat Escape",
+      "question": "They are right on our tail — what now?",
+      "choices": [
+        {"label": "Hit the gas and don’t look back!", "next": "N12"},
+        {"label": "Turn around and finish this!", "next": "N13"}
+      ],
+    },
+	{
+      "id": "N12",
+      "video": "4-a.mp4",
+	  	  "title": "Hit the gas",
+	  "deathdesc": "YOU MUST MAKE YOUR CHOICE CAREFULLY",
+	  "isEnd": true
+    },
+
+	{
+      "id": "N13",
+	  	  "title": "Turn around",
+      "video": "4-b.mp4",
+	  "next": "N14"
+    },
+
+	{
+      "id": "N14",
+      "video": "5.mp4",
+	  	  "title": "Final Confrontation",
+      "question": "Sarah is definitely acting suspicious — what should we do?",
+      "choices": [
+        {"label": "Strike first before she does.", "next": "N15"},
+        {"label": "No… she would not betray me.", "next": "N16"}
+      ],
+    },
+
+	{
+      "id": "N15",
+	  	  "title": "Strike first",
+      "video": "5-a.mp4",
+	  "next": "N17"
+    },
+	{
+      "id": "N16",
+      "video": "5-b.mp4",
+		"title": "She won't betray me",
+	  "deathdesc": "YOU MUST MAKE YOUR CHOICE CAREFULLY",
+	  "isEnd": true
+    }
+  ]
+}

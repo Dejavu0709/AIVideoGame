@@ -6,20 +6,23 @@ using System.Collections;
 using NexgenDragon;
 using Michsky.UI.Dark;
 using QTESystem;
-using UnityEditor.Experimental.GraphView;
+using DG.Tweening;
 public class GameUIController : MonoSingleton<GameUIController>
 {
     [Header("UI Elements")]
     public GameObject choicePanel;
-    public TextMeshProUGUI questionText;
+    public Text questionText;
     public Transform choiceButtonContainer;
     public Button choiceButtonPrefab;
 
     [Header("QTE UI")]
     public GameObject qtePanel;
-    //public ClickQTE clickQTE;
-    public MashingQTE mashingQTE;
+    public ClickQTE clickQTE;
+    //public MashingQTE mashingQTE;
     public ShootQTE shootQTE;
+    public LongPressQTE longPressQTE;
+    public SwipeQTE swipeQTE;
+    public SwipeEraseQTE swipeEraseQTE;
 
     [Header("Animation")]
     public float fadeInDuration = 0.5f;
@@ -30,6 +33,8 @@ public class GameUIController : MonoSingleton<GameUIController>
     public StoryTreeView TreeView;
 
     public Button playButton;
+    [Header("Stat Change Toast")]
+    public StatChangeToast statChangeToast;
     private List<Button> currentChoiceButtons = new List<Button>();
     private System.Action<string> onChoiceSelected;
     private System.Action<int> onQTECompleted;
@@ -37,6 +42,9 @@ public class GameUIController : MonoSingleton<GameUIController>
     private CanvasGroup qtePanelCanvasGroup;
 
     public CanvasGroup mainCanvasGroup;
+    [Header("Overlay")]
+    public RawImage blackMask;
+
 
     public ModalWindowManager MainView;
     public ModalWindowManager DeadView;
@@ -59,6 +67,7 @@ public class GameUIController : MonoSingleton<GameUIController>
             if (qtePanelCanvasGroup == null)
                 qtePanelCanvasGroup = qtePanel.AddComponent<CanvasGroup>();
         }
+
 
         HideAllUI();
     }
@@ -121,13 +130,13 @@ public class GameUIController : MonoSingleton<GameUIController>
             case "clicks":
             
             qtePanel.gameObject.SetActive(true);
-            mashingQTE.gameObject.SetActive(true);
-            mashingQTE.timesToHit = int.Parse(qteData.param1);
-            mashingQTE.time = qteData.duration;
-            mashingQTE.timesToHit = 20;
-            mashingQTE.time = 5;
-            mashingQTE.BeginQTE();
-            //clickQTE.ShowQTE(qteData, onQTECompleted);
+            // mashingQTE.gameObject.SetActive(true);
+            // mashingQTE.timesToHit = int.Parse(qteData.param1);
+            // mashingQTE.time = qteData.duration;
+            // mashingQTE.timesToHit = 20;
+            // mashingQTE.time = 5;
+            // mashingQTE.BeginQTE();
+            clickQTE.ShowQTE(qteData, onQTECompleted);
                 break;
             case "shoot":
             
@@ -139,6 +148,42 @@ public class GameUIController : MonoSingleton<GameUIController>
                 else
                 {
                     Debug.LogWarning("ShootQTE is not assigned on GameUIController");
+                    onQTECompleted?.Invoke(0);
+                }
+                break;
+            case "longpress":
+                if (longPressQTE != null)
+                {
+                    qtePanel.gameObject.SetActive(true);
+                    longPressQTE.ShowQTE(qteData, onQTECompleted);
+                }
+                else
+                {
+                    Debug.LogWarning("LongPressQTE is not assigned on GameUIController");
+                    onQTECompleted?.Invoke(0);
+                }
+                break;
+            case "swipe":
+                if (swipeQTE != null)
+                {
+                    qtePanel.gameObject.SetActive(true);
+                    swipeQTE.ShowQTE(qteData, onQTECompleted);
+                }
+                else
+                {
+                    Debug.LogWarning("SwipeQTE is not assigned on GameUIController");
+                    onQTECompleted?.Invoke(0);
+                }
+                break;
+            case "swipeerase":
+                if (swipeEraseQTE != null)
+                {
+                    qtePanel.gameObject.SetActive(true);
+                    swipeEraseQTE.ShowQTE(qteData, onQTECompleted);
+                }
+                else
+                {
+                    Debug.LogWarning("SwipeEraseQTE is not assigned on GameUIController");
                     onQTECompleted?.Invoke(0);
                 }
                 break;
@@ -172,7 +217,7 @@ public class GameUIController : MonoSingleton<GameUIController>
         }
 
         Button button = Instantiate(choiceButtonPrefab, choiceButtonContainer);
-        TextMeshProUGUI buttonText = button.GetComponentInChildren<TextMeshProUGUI>();
+        Text buttonText = button.GetComponentInChildren<Text>();
 
         if (buttonText != null)
         {
@@ -321,6 +366,7 @@ public class GameUIController : MonoSingleton<GameUIController>
 
     public void ShowAllCanvasGroup()
     {
+        HideBlackMask();
         StartCoroutine(FadeInCanvas(mainCanvasGroup));
     }
 
@@ -341,6 +387,29 @@ public class GameUIController : MonoSingleton<GameUIController>
             Debug.Log("Fade in completed");
             canvasGroup.alpha = 1f;
         }
+    }
+
+    public void ShowBlackMask()
+    {
+        Debug.Log("ShowBlackMask");
+        //暂时去掉黑幕
+        return;
+        if (blackMask == null) return;
+        blackMask.color = new Color(0, 0, 0, 1);
+    }
+
+    public void HideBlackMask()
+    {
+        Debug.Log("HideBlackMask");
+        if (blackMask == null) return;
+        blackMask.DOFade(0, 0.3f);
+    }
+
+    public void ShowStatChangeToast(string statName, int deltaValue)
+    {
+        if (statChangeToast == null) return;
+        string label = statName ?? string.Empty;
+        statChangeToast.Show(null, label, deltaValue);
     }
 
     public void ShowTreeView()

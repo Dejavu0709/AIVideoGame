@@ -1,0 +1,60 @@
+body {
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+
+#unity-container {
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 3vh;
+  position: absolute;
+  z-index: -1;
+  display: block;
+}
+
+#unity-container.unity-desktop {
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+#unity-canvas {
+  background: {{{ BACKGROUND_COLOR }}};
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+
+#unity-logo {
+  height: 130px;
+  background: url('unity-logo-{{{ SPLASH_SCREEN_STYLE.toLowerCase() }}}.png') no-repeat center;
+  width: 154px;
+}
+
+#unity-footer {
+  position: relative;
+}
+
+#unity-webgl-logo {
+  background: url('webgl-logo.png') no-repeat center;
+  float: left;
+  height: 38px;
+  width: 204px;
+}
+
+#unity-build-title {
+  float: right;
+  font-family: arial;
+  font-size: 18px;
+  line-height: 38px;
+  margin-right: 10px;
+}
+
+#unity-fullscreen-button {
+  background: url('fullScreen.png') no-repeat center;
+  float: right;
+  height: 38px;
+  width: 38px;
+}

@@ -1,0 +1,170 @@
+{
+  "meta": {
+    "title": "LinearGame Demo",
+    "cdnBase": "https://lgdemogame.s3.ap-northeast-3.amazonaws.com/memory",
+    "startNodeId": "N0"
+  },
+  "nodes": [
+	{
+      "id": "N0",
+      "video": "0.mp4",
+		"qte": {
+        "type": "clicks",
+        "duration": 10,
+        "NextNodeMap": {
+          "0": "N0-a"
+        },
+        "startDelayFromStartSeconds": 5,
+		"position": "0.2,0.2",
+        "param1": "3",
+        "param2": null,
+        "param3": null
+      }
+    },
+	{
+      "id": "N0-a",
+      "video": "0-a.mp4",
+	  "qteGroup": [
+    { "type": "swipe", "duration": 2.5, "startDelayFromStartSeconds": 1, "param1": "left"},
+    { "type": "swipe", "duration": 3, "startDelayFromStartSeconds": 5, "param1": "right" },
+    { "type": "swipe", "duration": 4, "startDelayFromStartSeconds": 9, "param1": "up"  },
+	],
+	"qteNextNodeMap": {
+    "2": "N01",
+	"1": "N01",
+    "0": "N01"
+  },
+  	  "next": "N01"
+    },
+	{
+      "id": "N0-b",
+      "video": "0-b.mp4",
+	  "next": "N01"
+    },
+    {
+      "id": "N01",
+      "video": "1.mp4",
+      "question": "We’re trapped. What Now?",
+      "choices": [
+        {"label": "Warehouse — I know a way out.", "next": "N03"},
+        {"label": "Trust me… got a trick.", "next": "N04"}
+      ],
+	   "qte": {
+        "type": "shoot",
+        "duration": 5,
+        "NextNodeMap": {
+          "0": "N02"
+        },
+        "startDelayFromStartSeconds": 5,
+        "param1": "3,3",
+        "param2": "300,300",
+        "param3": null
+      }
+    },
+	{
+      "id": "N02",
+      "video": "1-c.mp4",
+	  "deathdesc": "YOU MUST TAKE THE CHOICE",
+	  "isEnd": true
+    },
+	{
+      "id": "N03",
+      "video": "1-a.mp4",
+	  "deathdesc": "YOU MUST MAKE YOUR CHOICE CAREFULLY",
+	  "isEnd": true
+    },
+	
+	{
+      "id": "N04",
+      "video": "1-b.mp4",
+	  "next": "N05"
+    },
+	
+	{
+      "id": "N05",
+      "video": "2.mp4",
+      "question": "Highway or side route — what’s it gonna be?",
+      "choices": [
+        {"label": "Highway", "next": "N06"},
+        {"label": "Side route", "next": "N07"}
+      ],
+    },
+	{
+      "id": "N06",
+      "video": "2-a.mp4",
+	  "next": "N08"
+    },
+	{
+      "id": "N07",
+      "video": "2-b.mp4",
+	  "deathdesc": "YOU MUST MAKE YOUR CHOICE CAREFULLY",
+	  "isEnd": true
+    },
+	
+	
+	{
+      "id": "N08",
+      "video": "3.mp4",
+      "question": "Should I trust Sarah?",
+      "choices": [
+        {"label": "Still seems okay.", "next": "N09"},
+        {"label": "Nah, something’s not right with her.", "next": "N10"}
+      ],
+    },
+	{
+      "id": "N09",
+      "video": "3-a.mp4",
+	  "next": "N11"
+    },
+	{
+      "id": "N10",
+      "video": "3-b.mp4",
+	  "deathdesc": "YOU MUST MAKE YOUR CHOICE CAREFULLY",
+	  "isEnd": true
+    },
+
+	{
+      "id": "N11",
+      "video": "4.mp4",
+      "question": "They’re right on our tail — what now?",
+      "choices": [
+        {"label": "Hit the gas and don’t look back!", "next": "N12"},
+        {"label": "Turn around and finish this!", "next": "N13"}
+      ],
+    },
+	{
+      "id": "N12",
+      "video": "4-a.mp4",
+	  "deathdesc": "YOU MUST MAKE YOUR CHOICE CAREFULLY",
+	  "isEnd": true
+    },
+
+	{
+      "id": "N13",
+      "video": "4-b.mp4",
+	  "next": "N14"
+    },
+
+	{
+      "id": "N14",
+      "video": "5.mp4",
+      "question": "Sarah’s definitely acting suspicious — what should we do?",
+      "choices": [
+        {"label": "Strike first before she does.", "next": "N15"},
+        {"label": "No… she wouldn’t betray me.", "next": "N16"}
+      ],
+    },
+
+	{
+      "id": "N15",
+      "video": "5-a.mp4",
+	  "next": "N17"
+    },
+	{
+      "id": "N16",
+      "video": "5-b.mp4",
+	  "deathdesc": "YOU MUST MAKE YOUR CHOICE CAREFULLY",
+	  "isEnd": true
+    }
+  ]
+}

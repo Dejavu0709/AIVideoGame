@@ -29,7 +29,9 @@ public class GameDataLoader : MonoBehaviour
             {
                 try
                 {
-                    GameData gameData = JsonUtility.FromJson<GameData>(request.downloadHandler.text);
+                    // Use UTF-8 encoding to properly handle Chinese characters
+                    string jsonText = System.Text.Encoding.UTF8.GetString(request.downloadHandler.data);
+                    GameData gameData = JsonUtility.FromJson<GameData>(jsonText);
                     onSuccess?.Invoke(gameData);
                 }
                 catch (System.Exception e)
@@ -65,7 +67,8 @@ public class GameDataLoader : MonoBehaviour
                 
                 if (request.result == UnityWebRequest.Result.Success)
                 {
-                    jsonContent = request.downloadHandler.text;
+                    // Use UTF-8 encoding to properly handle Chinese characters
+                    jsonContent = System.Text.Encoding.UTF8.GetString(request.downloadHandler.data);
                 }
                 else
                 {
@@ -78,7 +81,8 @@ public class GameDataLoader : MonoBehaviour
                 // For standalone platforms
                 if (System.IO.File.Exists(filePath))
                 {
-                    jsonContent = System.IO.File.ReadAllText(filePath);
+                    // Use UTF-8 encoding to properly handle Chinese characters
+                    jsonContent = System.IO.File.ReadAllText(filePath, System.Text.Encoding.UTF8);
                 }
                 else
                 {

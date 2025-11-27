@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using BestHTTP;
 using BestHTTP.Caching;
-#if UNITY_WEBGL || WEIXINMINIGAME || PLATFORM_WEIXINMINIGAME
+#if WEIXINMINIGAME || PLATFORM_WEIXINMINIGAME
 using WeChatWASM;
 #endif
 
@@ -15,7 +15,7 @@ public static class ThumbnailCache
     private static string CacheDir => Path.Combine(Application.persistentDataPath, "ThumbnailCache");
 
     // Build full path helpers
-    private static string StreamingFilePath(string streamingSubfolder, string fileName)
+    private static string  StreamingFilePath(string streamingSubfolder, string fileName)
     {
         if (string.IsNullOrEmpty(streamingSubfolder))
             return Path.Combine(Application.streamingAssetsPath, fileName);
@@ -27,13 +27,14 @@ public static class ThumbnailCache
         #if UNITY_EDITOR
         return null;
         #endif
-
+        #if WEIXINMINIGAME || PLATFORM_WEIXINMINIGAME
         string path = WX.env.USER_DATA_PATH;
         Debug.Log("path" + path);
         string cachePath = Path.Combine(path, fileName);
         Debug.Log("cachePath" + cachePath);
         return cachePath;
-        //return Path.Combine(CacheDir, fileName);
+        #endif
+        return Path.Combine(CacheDir, fileName);
     }
 
     public static bool TryLoadLocal(string nodeId, string streamingSubfolder, out Sprite sprite)
@@ -63,7 +64,7 @@ public static class ThumbnailCache
             {
                 if (TryLoadSpriteFromFile(cachedPath, out sprite))
                 {
-                    Debug.Log($"TryLoadLocal sprite for '{nodeId}'" + sprite.name + " " + sprite.texture.name + sprite != null);
+                    //Debug.Log($"TryLoadLocal sprite for '{nodeId}'" + sprite.name + " " + sprite.texture.name + sprite != null);
                     return true;
                 }
             }
@@ -74,7 +75,7 @@ public static class ThumbnailCache
 
     public static IEnumerator LoadOrDownload(string videoFileName, string url, string streamingSubfolder, Action<Sprite> onLoaded)
     {
-        Debug.Log("videoFileName" + videoFileName);
+        //Debug.Log("videoFileName" + videoFileName);
         // Try local first (StreamingAssets -> Cache)
         if (TryLoadLocal(videoFileName, streamingSubfolder, out var localSprite))
         {
@@ -83,36 +84,41 @@ public static class ThumbnailCache
             yield break;
         }
         Debug.Log($"LoadOrDownload download  for '{url}'");
-        /*
         // If StreamingAssets path is not a regular file (e.g., Android/WebGL), try to load it via UnityWebRequest
-        string fileName = videoFileName + ".png";
-        string streamingPath = StreamingFilePath(streamingSubfolder, fileName);
-        bool streamingIsUri = streamingPath.Contains("://") || streamingPath.Contains(":///");
-        if (streamingIsUri)
         {
-            using (UnityWebRequest req = UnityWebRequestTexture.GetTexture(streamingPath))
+            //string[] exts = new [] { ".png"};
+            //for (int i = 0; i < exts.Length; i++)
             {
-                yield return req.SendWebRequest();
-#if UNITY_2020_2_OR_NEWER
-                if (req.result == UnityWebRequest.Result.Success)
-#else
-                if (!(req.isNetworkError || req.isHttpError))
-#endif
+                //string fileName = videoFileName + exts[i];
+                //string streamingPath = StreamingFilePath(streamingSubfolder, fileName);
+               // Debug.Log("streamingPath: "+  streamingPath);
+                //bool streamingIsUri = streamingPath.Contains("://") || streamingPath.Contains(":///");
+                //if (streamingIsUri)
                 {
-                    var texFromSA = DownloadHandlerTexture.GetContent(req);
-                    if (texFromSA != null)
+                    using (UnityWebRequest req = UnityWebRequestTexture.GetTexture(url))
                     {
-                        var sp = Sprite.Create(texFromSA, new Rect(0, 0, texFromSA.width, texFromSA.height), new Vector2(0.5f, 0.5f));
-                        onLoaded?.Invoke(sp);
-                        yield break;
+                        yield return req.SendWebRequest();
+#if UNITY_2020_2_OR_NEWER
+                        if (req.result == UnityWebRequest.Result.Success)
+#else
+                        if (!(req.isNetworkError || req.isHttpError))
+#endif
+                        {
+                            var texFromSA = DownloadHandlerTexture.GetContent(req);
+                            if (texFromSA != null)
+                            {
+                                var sp = Sprite.Create(texFromSA, new Rect(0, 0, texFromSA.width, texFromSA.height), new Vector2(0.5f, 0.5f));
+                                onLoaded?.Invoke(sp);
+                                yield break;
+                            }
+                        }
                     }
                 }
             }
         }
-        */
-        Debug.Log($"Thumbnail download  for '{url}'");
+       // Debug.Log($"Thumbnail download  for '{url}'");
 
-#if UNITY_WEBGL || WEIXINMINIGAME && !UNITY_EDITOR
+#if WEIXINMINIGAME && !UNITY_EDITOR
         // WeChat Mini Game/WebGL path: explicitly use wx.downloadFile via WeChatWASM.WX.DownloadFile
         if (!string.IsNullOrEmpty(url))
         {

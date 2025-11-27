@@ -389,7 +389,7 @@ public class SceneSetupHelper : MonoBehaviour
         if (uiController != null)
         {
             uiController.choicePanel = uiCanvas.transform.Find("ChoicePanel")?.gameObject;
-            uiController.questionText = uiController.choicePanel?.transform.Find("QuestionText")?.GetComponent<TextMeshProUGUI>();
+            uiController.questionText = uiController.choicePanel?.transform.Find("QuestionText")?.GetComponent<Text>();
             uiController.choiceButtonContainer = uiController.choicePanel?.transform.Find("ChoiceButtonContainer");
             uiController.choiceButtonPrefab = choiceButtonPrefab;
             

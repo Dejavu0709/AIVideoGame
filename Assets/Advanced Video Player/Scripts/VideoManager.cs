@@ -151,17 +151,26 @@ public class VideoManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         videoPlayer.source = VideoSource.Url;
         if (advancedVideoManager.isLocalVideo) {
             string path = videoUrl.Replace("\\", "/");
-            if (!path.StartsWith("file://")) {
-                // On Windows we need three slashes after file:
-                path = "file:///" + path;
+            // If it already has a URI scheme (e.g., jar:file:// on Android, http(s) or file), use as-is
+            if (path.Contains("://")) {
+                videoPlayer.url = path;
+                Debug.Log("1videoPlayer.url:" + videoPlayer.url);
+            } else {
+                // Otherwise ensure file:/// prefix with three slashes
+                if (!path.StartsWith("file://")) {
+                    path = "file:///" + path;
+                }
+                videoPlayer.url = path;
+                  Debug.Log("2videoPlayer.url:" + videoPlayer.url);
             }
-            videoPlayer.url = path;
             videoPlayer.time = 0;
             notLocalInit = false;
         } else {
+            
             videoPlayer.url = videoUrl;
             videoPlayer.time = 0;
             notLocalInit = false;
+              Debug.Log("3videoPlayer.url:" + videoPlayer.url);
         }
         
         videoPlayer.Play();
@@ -437,7 +446,7 @@ public class VideoManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     /// <returns></returns>
     public bool IsVideoEnded() {
         //Debug.Log("videoPlayer.length = " + videoPlayer.length);
-       // Debug.Log("videoPlayer.time = " + videoPlayer.time);
+        // Debug.Log("videoPlayer.time = " + videoPlayer.time);
         return videoPlayer.length - videoPlayer.time < 0.15;
     }
 

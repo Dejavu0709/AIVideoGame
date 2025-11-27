@@ -1,11 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ShootQTE : MonoBehaviour
+public class ShootQTE : BaseQTE
 {
     public Camera ShootCamera;
+    public GameObject Gun;
+    public Transform GunStart;
+    public Transform GunEnd;
     public GameObject scopeOverlay;
     public Button shootButton;
     public GameObject qtePanel;
@@ -23,6 +27,8 @@ public class ShootQTE : MonoBehaviour
     public RectTransform uiCanvasToShake;
     public float shakeDuration = 0.2f; // seconds
     public float shakeMagnitude = 25f; // pixels
+    public Image qteProgressBar;
+    public GameObject target;
     private System.Action<int> onComplete;
     private Coroutine wobbleCo;
     private Coroutine timeoutCo;
@@ -48,6 +54,7 @@ public class ShootQTE : MonoBehaviour
         this.onComplete = onComplete;
         currentData = qteData;
         completed = false;
+        ResetResultIndicators();
         if (qtePanel != null)
         {
             qtePanel.SetActive(true);
@@ -58,9 +65,43 @@ public class ShootQTE : MonoBehaviour
         {
             StartCoroutine(FadeInPanel(qtePanelCanvasGroup, qtePanel));
         }
-        if (ShootCamera != null)
+        if (Gun != null)
+        {
+            Gun.transform.localRotation = Quaternion.identity;
+        }
+        else if (ShootCamera != null)
         {
             ShootCamera.transform.localRotation = Quaternion.identity;
+        }
+        // Position target via parameters: param1 = "x,y" in world units (x in [-20,20], y in [-10,10]);
+        // If absent, random within bounds. z remains unchanged.
+        if (target != null)
+        {
+            float x = 0f, y = 0f;
+            bool hasXY = false;
+            if (currentData != null && !string.IsNullOrEmpty(currentData.param1))
+            {
+                var parts = currentData.param1.Split(',');
+                if (parts.Length >= 2)
+                {
+                    if (float.TryParse(parts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out x) &&
+                        float.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out y))
+                    {
+                        hasXY = true;
+                    }
+                }
+            }
+            if (!hasXY)
+            {
+                x = Random.Range(-20f, 20f);
+                y = Random.Range(-10f, 10f);
+            }
+            x = Mathf.Clamp(x, -20f, 20f);
+            y = Mathf.Clamp(y, -10f, 10f);
+            var pos = target.transform.localPosition;
+            pos.x = x;
+            pos.y = y;
+            target.transform.localPosition = pos;
         }
         if (wobbleCo != null)
         {
@@ -77,6 +118,19 @@ public class ShootQTE : MonoBehaviour
         {
             timeoutCo = StartCoroutine(TimeoutRoutine(currentData.duration));
         }
+        // Setup progress bar visibility and initial fill based on duration
+        if (qteProgressBar != null)
+        {
+            if (currentData != null && currentData.duration > 0f)
+            {
+                qteProgressBar.gameObject.SetActive(true);
+                qteProgressBar.fillAmount = 1f;
+            }
+            else
+            {
+                qteProgressBar.gameObject.SetActive(false);
+            }
+        }
     }
 
     public void HideQTE()
@@ -91,17 +145,15 @@ public class ShootQTE : MonoBehaviour
             StopCoroutine(timeoutCo);
             timeoutCo = null;
         }
-        StartCoroutine(HideAfterDelay());
+        if (qteProgressBar != null)
+        {
+            qteProgressBar.gameObject.SetActive(false);
+        }
+        HideAfterDelay();
     }
 
-    private IEnumerator HideAfterDelay()
+    private void HideAfterDelay()
     {
-        float t = 0f;
-        while (t < hideDelaySeconds)
-        {
-            t += Time.deltaTime;
-            yield return null;
-        }
         if (scopeOverlay != null) scopeOverlay.SetActive(false);
         if (qtePanel != null) qtePanel.SetActive(false);
         if (qtePanelCanvasGroup != null) qtePanelCanvasGroup.alpha = 0f;
@@ -136,12 +188,16 @@ public class ShootQTE : MonoBehaviour
         float seedY = Random.value * 100f;
         while (true)
         {
-            if (ShootCamera != null)
+            Transform target = null;
+            if (Gun != null) target = Gun.transform;
+            else if (ShootCamera != null) target = ShootCamera.transform;
+
+            if (target != null)
             {
                 float rx = Mathf.Sin((Time.time + seedX) * wobbleSpeedX) * wobbleAmplitudeX;
                 float ry = Mathf.Sin((Time.time + seedY) * wobbleSpeedY) * wobbleAmplitudeY;
                 var e = new Vector3(rx, ry, 0f);
-                ShootCamera.transform.localRotation = Quaternion.Euler(e);
+                target.localRotation = Quaternion.Euler(e);
             }
             yield return null;
         }
@@ -150,9 +206,36 @@ public class ShootQTE : MonoBehaviour
     private void OnShootClicked()
     {
         if (completed) return;
-        Vector2 center = new Vector2(0.5f, 0.5f);
-        Vector2 rectCenter = new Vector2(0.5f, 0.5f);
-        Vector2 rectSize = new Vector2(0.1f, 0.1f);
+        bool inside = false;
+        // Determine hit by checking if line from GunStart to GunEnd intersects target's 2D collider
+        if (GunStart != null && GunEnd != null && target != null)
+        {
+            Debug.Log("GunStart: " + GunStart.position);
+            Debug.Log("GunEnd: " + GunEnd.position);
+            var col2D = target.GetComponent<CircleCollider2D>();
+            if (col2D != null)
+            {
+                Vector2 a = (Vector2)GunStart.position;
+                Vector2 b = (Vector2)GunEnd.position;
+                var hit = Physics2D.Linecast(a, b);
+                if (hit.collider != null && hit.collider == col2D)
+                {
+                    Debug.Log("Hit target");
+                    inside = true;
+                }
+                else
+                {
+                    Debug.Log("Miss target");
+                    inside = false;
+                    return;
+                }
+            }
+            else
+            {
+                Debug.LogError("Target has no CircleCollider2D");
+                return;
+            }
+        }
         // Play audio
         if (audioSource != null && gunshotClip != null)
         {
@@ -163,44 +246,21 @@ public class ShootQTE : MonoBehaviour
         {
             StartCoroutine(ShakeUICanvas(uiCanvasToShake, shakeDuration, shakeMagnitude));
         }
-        if (currentData != null)
+        // Optional: allow wobble params via param3: ax,ay,sx,sy
+        if (currentData != null && !string.IsNullOrEmpty(currentData.param3))
         {
-            if (!string.IsNullOrEmpty(currentData.param1))
+            var parts = currentData.param3.Split(',');
+            if (parts.Length >= 4)
             {
-                var parts = currentData.param1.Split(',');
-                if (parts.Length >= 2)
-                {
-                    float.TryParse(parts[0], out rectCenter.x);
-                    float.TryParse(parts[1], out rectCenter.y);
-                }
-            }
-            if (!string.IsNullOrEmpty(currentData.param2))
-            {
-                var parts = currentData.param2.Split(',');
-                if (parts.Length >= 2)
-                {
-                    float.TryParse(parts[0], out rectSize.x);
-                    float.TryParse(parts[1], out rectSize.y);
-                }
-            }
-            if (!string.IsNullOrEmpty(currentData.param3))
-            {
-                var parts = currentData.param3.Split(',');
-                if (parts.Length >= 4)
-                {
-                    float ax, ay, sx, sy;
-                    if (float.TryParse(parts[0], out ax)) wobbleAmplitudeX = ax;
-                    if (float.TryParse(parts[1], out ay)) wobbleAmplitudeY = ay;
-                    if (float.TryParse(parts[2], out sx)) wobbleSpeedX = sx;
-                    if (float.TryParse(parts[3], out sy)) wobbleSpeedY = sy;
-                }
+                float ax, ay, sx, sy;
+                if (float.TryParse(parts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out ax)) wobbleAmplitudeX = ax;
+                if (float.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out ay)) wobbleAmplitudeY = ay;
+                if (float.TryParse(parts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out sx)) wobbleSpeedX = sx;
+                if (float.TryParse(parts[3], NumberStyles.Float, CultureInfo.InvariantCulture, out sy)) wobbleSpeedY = sy;
             }
         }
-        Vector2 half = rectSize * 0.5f;
-        bool inside = Mathf.Abs(center.x - rectCenter.x) <= half.x && Mathf.Abs(center.y - rectCenter.y) <= half.y;
         completed = true;
-        onComplete?.Invoke(inside ? 1 : 0);
-        HideQTE();
+        CompleteQTE(inside ? 1 : 0, onComplete, HideQTE);
     }
 
     private IEnumerator ShakeUICanvas(RectTransform target, float duration, float magnitude)
@@ -226,13 +286,20 @@ public class ShootQTE : MonoBehaviour
         {
             if (completed) yield break;
             t += Time.deltaTime;
+            if (qteProgressBar != null && duration > 0f)
+            {
+                qteProgressBar.fillAmount = Mathf.Clamp01(1f - (t / duration));
+            }
             yield return null;
         }
         if (!completed)
         {
             completed = true;
-            onComplete?.Invoke(0);
-            HideQTE();
+            if (qteProgressBar != null)
+            {
+                qteProgressBar.fillAmount = 0f;
+            }
+            CompleteQTE(0, onComplete, HideQTE);
         }
     }
 }

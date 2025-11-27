@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using NexgenDragon;
 using com.ootii.Messages;
+using HISPlayer;
 
 public class VideoPlayerController : MonoSingleton<VideoPlayerController>
 {
@@ -10,8 +11,19 @@ public class VideoPlayerController : MonoSingleton<VideoPlayerController>
     public UnityEvent OnVideoFinished;
     public UnityEvent OnVideoStarted;
     
-
+#if ADV_PLAYER
     public VideoManager videoManager;
+#endif
+    public HISVideoPlayerManager hisPlayerController;
+
+    public bool IsLocalVideo;
+
+
+
+
+
+
+
     private bool isVideoPlaying = false;
     private string currentVideoUrl = "";
 
@@ -36,6 +48,7 @@ public class VideoPlayerController : MonoSingleton<VideoPlayerController>
     
     private void OnVideoEnded(IMessage message)
     {
+        Debug.Log("Video ended");
         isVideoPlaying = false;
         OnVideoFinished?.Invoke();
     }
@@ -50,20 +63,34 @@ public class VideoPlayerController : MonoSingleton<VideoPlayerController>
     {
         currentVideoUrl = videoUrl;
         Debug.Log($"Playing video: {videoUrl}");
-
+        //videoUrl = "asdasadsads";
         // Stop current video if playing
         if (isVideoPlaying)
         {
+            Debug.Log("Stop current video if playing");
+            #if ADV_PLAYER
             videoManager.Pause();
+            #else
+            hisPlayerController.PauseVideo();
+            #endif
         }
+        #if ADV_PLAYER
         videoManager.InitVideo(videoUrl);
+        #else
+        hisPlayerController.PlayVideo(videoUrl);
+        #endif
+        isVideoPlaying = true;
     }
     
     public void StopVideo()
     {
         if (isVideoPlaying)
         {
+            #if ADV_PLAYER
             videoManager.Pause();
+            #else
+            hisPlayerController.CloseVideo();
+            #endif
             isVideoPlaying = false;
         }
     }
@@ -73,22 +100,35 @@ public class VideoPlayerController : MonoSingleton<VideoPlayerController>
         Debug.Log("PauseVideo");
         if (isVideoPlaying)
         {
+            #if ADV_PLAYER
             videoManager.Pause();
+            #else
+            hisPlayerController.PauseVideo();
+            #endif
             isVideoPlaying = false;
         }
     }
     
     public void ResumeVideo()
     {
+        Debug.Log("ResumeVideo");
         if (!isVideoPlaying)
         {
+            #if ADV_PLAYER
             videoManager.Play();
+            #else
+            hisPlayerController.ResumeVideo();
+            #endif
+            isVideoPlaying = true;
         }
     }
     
     public bool IsVideoPlaying()
     {
+        #if ADV_PLAYER
         return isVideoPlaying && videoManager != null;
+        #endif
+        return isVideoPlaying;
     }
     
     /*

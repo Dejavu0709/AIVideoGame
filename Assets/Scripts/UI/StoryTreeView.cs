@@ -151,6 +151,17 @@ public class StoryTreeView : MonoBehaviour
                 //if (!string.IsNullOrEmpty(node.qte.successNext) && node.qte.successNext != node.id) children[node.id].Add(node.qte.successNext);
                 //if (!string.IsNullOrEmpty(node.qte.failNext) && node.qte.failNext != node.id) children[node.id].Add(node.qte.failNext);
             }
+            if(node.qteGroup != null && node.qteNextNodeMap != null)
+            {
+                foreach (var kv in node.qteNextNodeMap)
+                {
+                    if (!string.IsNullOrEmpty(kv.Value) && kv.Value != node.id && visited.Contains(kv.Value))
+                    {
+                        children[node.id].Add(kv.Value);
+                        Debug.Log(node.id + ":" + kv.Value);
+                    }
+                }
+            }
             if(!string.IsNullOrEmpty(node.next))
             {
                 children[node.id].Add(node.next);
@@ -228,23 +239,23 @@ public class StoryTreeView : MonoBehaviour
 
                 // Set info: title and thumbnail
                 Sprite sprite = null;
-                string title = !string.IsNullOrEmpty(n.question) ? n.question : n.id;
+                string title = !string.IsNullOrEmpty(n.title) ? n.title : n.id;
                 //var sprite = LoadThumbnailForNode(n, data?.meta?.cdnBase);
                 //if (sprite == null)
                 {
                     // Ensure thumbnail is loaded or downloaded and cached, then applied when ready
                     string URL = BranchingVideoGameManager.Instance.GetThumbnailUrl($"{n.video.Replace(".mp4", ".png")}");
-                    Debug.Log($"Thumbnail URL: {URL}");
+                    //Debug.Log($"Thumbnail URL: {URL}");
                     StartCoroutine(ThumbnailCache.LoadOrDownload(
                     n.video.Split('.').First(),
                     URL,
-                    streamingThumbnailsFolder,
+                    $"{BranchingVideoGameManager.Instance.gameAssetFolder}/{streamingThumbnailsFolder}",
                     loaded =>
                     {
-                        Debug.Log($"Thumbnail loaded for" + loaded != null);
+                        //Debug.Log($"Thumbnail loaded for" + loaded != null);
                         if (nodeUI != null && nodeUI.thumbnailImage != null && loaded != null)
                         {
-                            Debug.Log($"Thumbnail loaded for" + loaded != null);
+                            //Debug.Log($"Thumbnail loaded for" + loaded != null);
                             nodeUI.thumbnailImage.sprite = loaded;
                         }
                     }));

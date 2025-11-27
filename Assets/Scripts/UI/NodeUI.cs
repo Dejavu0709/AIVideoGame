@@ -31,7 +31,7 @@ public class NodeUI : MonoBehaviour
     /// </summary>
     public void SetInfo(string id, string title)
     {
-        Debug.LogError(" title:" + title);
+        //Debug.LogError(" title:" + title);
         nodeId = id;
         if (titleText != null)
            titleText.text = title ?? id;

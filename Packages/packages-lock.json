@@ -1,5 +1,11 @@
 {
   "dependencies": {
+    "com.hisplayer.hisplayersdk": {
+      "version": "file:com.hisplayer.hisplayersdk",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.unity.2d.animation": {
       "version": "9.2.0",
       "depth": 1,
